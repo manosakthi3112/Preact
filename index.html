@@ -334,6 +334,37 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;padding:.08rem .3rem;fo
 .docs-next{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem}
 .docs-next a{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem .9rem;border:1px solid var(--line);text-decoration:none}
 .docs-next a:hover{border-color:var(--accent)}
+.signals-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 78% 26%,rgba(174,128,255,.2),transparent 38%),var(--paper)}
+.signals-hero::after{content:"";position:absolute;z-index:-1;width:22rem;height:22rem;right:4%;bottom:-15rem;border:1px solid var(--line);border-radius:50%;box-shadow:0 0 0 2rem var(--acc-soft),0 0 0 4rem color-mix(in srgb,var(--acc-soft) 55%,transparent)}
+.signals-kicker{display:inline-flex;align-items:center;gap:.45rem;margin-bottom:1rem;padding:.4rem .65rem;border:1px solid var(--line);border-radius:999px;color:var(--accent);font:500 11px var(--mono);letter-spacing:.08em}
+.signals-layout{grid-template-columns:200px minmax(0,1fr)}
+.signals-content{max-width:800px}
+.signals-code{margin:1rem 0 1.3rem}
+.signals-demo{margin:1.35rem 0 1.5rem;padding:clamp(1rem,3vw,1.5rem);border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,var(--paper2),var(--paper))}
+.signals-demo-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.3rem}
+.signals-demo-head small{display:block;color:var(--accent);font:500 10px var(--mono);letter-spacing:.13em;text-transform:uppercase}
+.signals-demo-head h3{margin:.25rem 0 0;font-size:1.25rem}
+.signals-status{display:inline-flex;align-items:center;gap:.4rem;flex:none;padding:.35rem .55rem;border-radius:999px;background:var(--acc-soft);color:var(--accent);font:500 10px var(--mono)}
+.signals-status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.signals-counter{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1rem;padding:1.1rem;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.signals-counter button{width:42px;height:42px;border:1px solid var(--line);border-radius:11px;background:var(--paper2);color:var(--ink);font-size:1.3rem;cursor:pointer}
+.signals-counter button:hover{border-color:var(--accent);color:var(--accent)}
+.signals-count{text-align:center}
+.signals-count strong{display:block;font-size:clamp(2rem,7vw,3.2rem);line-height:1;letter-spacing:-.07em}
+.signals-count span{display:block;margin-top:.35rem;color:var(--faint);font:400 10px var(--mono);text-transform:uppercase;letter-spacing:.1em}
+.signals-derived{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin-top:.7rem}
+.signals-derived>div{padding:.8rem;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.signals-derived span{display:block;color:var(--faint);font:400 10px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.signals-derived b{display:block;margin-top:.2rem;font-size:1.1rem}
+.signals-demo-note{margin:.8rem 0 0;color:var(--faint);font-size:.8rem}
+.signals-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin:1.2rem 0}
+.signals-compare>div{padding:1rem;border:1px solid var(--line);border-radius:12px;background:var(--paper2)}
+.signals-compare b{display:block;margin-bottom:.35rem}
+.signals-compare p{margin:0;color:var(--faint);font-size:.9rem}
+.signals-end{margin:1rem 0 3rem;padding:clamp(1.3rem,4vw,2rem);border-radius:18px;background:var(--ink);color:var(--paper)}
+.signals-end p{color:var(--faint)}
+.signals-end .btn{border-color:var(--acc-on-ink);color:var(--acc-on-ink)}
+.signals-end .btn:hover{background:var(--acc-on-ink);color:var(--ink)}
 /* ---------- toast ---------- */
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:200;background:var(--ink);color:var(--paper);padding:.6rem 1rem;font:400 12.5px var(--mono);display:flex;gap:.55rem;align-items:center;max-width:min(90vw,480px);animation:tst .3s var(--ease)}
 .toast .iconw{color:var(--acc-on-ink)}
@@ -616,6 +647,7 @@ html.js .reveal.in{opacity:1;transform:none}
   .docs-sidebar a{white-space:nowrap;margin:0;border-left:0;border-bottom:2px solid transparent;padding:.5rem .6rem}
   .docs-sidebar a:hover,.docs-sidebar a:focus-visible{border-left-color:transparent;border-bottom-color:var(--accent)}
   .docs-install-cmd{align-items:flex-start}
+  .signals-compare{grid-template-columns:1fr}
   .resource-grid,.page-card-grid{grid-template-columns:1fr}
   .explore-head{display:block}
   .explore-head p{margin-top:.5rem}
@@ -862,6 +894,9 @@ main[id]{scroll-margin-top:88px}
   .docs-sidebar{position:static;border-left:0;border-bottom:1px solid var(--line);padding:0 0 .7rem}
   .docs-sidebar nav{display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.25rem}
   .docs-sidebar a{white-space:nowrap;margin:0;border-left:0;border-bottom:2px solid transparent;padding:.5rem .6rem}
+  .signals-layout{grid-template-columns:minmax(0,1fr)}
+  .signals-layout>.docs-sidebar{min-width:0}
+  .signals-content{min-width:0}
 }
 @media(max-width:430px){
   .gh-btn .iconw{display:none}
@@ -1309,7 +1344,7 @@ var ATOM_SVG = (function () {
 })();
 
 var MENU = [
-  ['home', '#home'], ['guide', '#guide'], ['tutorial', '#tutorial'],
+  ['home', '#home'], ['guide', '#guide'], ['signals', '#signals'], ['tutorial', '#tutorial'],
   ['libraries', '#libraries'], ['project', '#project'], ['blog', '#blog']
 ];
 
@@ -1996,7 +2031,8 @@ function Counter() {
           h('a', { href: '#docs-render' }, 'Render a tree'),
           h('a', { href: '#docs-state' }, 'Add interactivity'),
           h('a', { href: '#docs-compat' }, 'React compatibility'),
-          h('a', { href: '#docs-next' }, 'Where to go next'))),
+          h('a', { href: '#docs-next' }, 'Where to go next'),
+          h('a', { href: '#signals' }, 'Explore Signals →'))),
       h('article.docs-content',
         h('section.docs-section', { id: 'docs-install' },
           h('h2', '1. Install Preact'),
@@ -2081,7 +2117,155 @@ render(h(App), document.getElementById('app'));`,
           h('p', 'The best next step is to build a small feature and keep the official guide close. Preact’s source is compact, the API is familiar, and the ecosystem is there when your project needs it.'),
           h('div.docs-next',
             h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'Read the official guide ', h(Icon, { name: 'ext', size: 13 })),
-            h('a', { href: '#playground' }, 'Explore the live playground ', h(Icon, { name: 'arrow', size: 13 })))))));
+            h('a', { href: '#playground' }, 'Explore the live playground ', h(Icon, { name: 'arrow', size: 13 })),
+            h('a', { href: '#signals' }, 'Discover Signals ', h(Icon, { name: 'arrow', size: 13 })))))));
+}
+
+/* ---------- signals guide route ---------- */
+function SignalsPage() {
+  var cs = useState(0), count = cs[0], setCount = cs[1];
+  var signalCode = `import { signal } from '@preact/signals';
+
+const count = signal(0);
+
+function Counter() {
+  return (
+    <button onClick={() => count.value++}>
+      Count: {count}
+    </button>
+  );
+}`;
+  var computedCode = `import { signal, computed } from '@preact/signals';
+
+const price = signal(12);
+const quantity = signal(2);
+const total = computed(() => price.value * quantity.value);
+
+console.log(total.value); // 24`;
+  var effectCode = `import { signal, effect } from '@preact/signals';
+
+const count = signal(0);
+
+effect(() => {
+  console.log('count changed:', count.value);
+});`;
+  var todosCode = `import { signal, computed } from '@preact/signals';
+
+const todos = signal([
+  { text: 'Sketch the interface', completed: true },
+  { text: 'Build with Preact', completed: false }
+]);
+
+const completed = computed(() =>
+  todos.value.filter(todo => todo.completed).length
+);
+
+function addTodo(text) {
+  todos.value = [...todos.value, { text, completed: false }];
+}`;
+
+  return h('div.wrap',
+    h('header.docs-hero.signals-hero',
+      h('p.docs-crumb', h('a', { href: '#home' }, 'preact'), ' / ', h('a', { href: '#guide' }, 'guide'), ' / signals'),
+      h('span.signals-kicker', 'PREACT GUIDE · V11'),
+      h('h1.docs-title', 'State that stays in sync.'),
+      h('p.docs-lede', 'Signals are reactive primitives for application state. They track what uses each value, then update the relevant parts of your UI when that value changes — with a small, direct API.')),
+    h('div.docs-layout.signals-layout',
+      h('aside.docs-sidebar',
+        h('b', 'On this page'),
+        h('nav', { 'aria-label': 'Signals guide contents' },
+          h('a', { href: '#signals-intro' }, 'Why Signals'),
+          h('a', { href: '#signals-install' }, 'Install'),
+          h('a', { href: '#signals-basics' }, 'Create a signal'),
+          h('a', { href: '#signals-preact' }, 'Use it in Preact'),
+          h('a', { href: '#signals-derived' }, 'Computed state'),
+          h('a', { href: '#signals-effects' }, 'Side effects'),
+          h('a', { href: '#signals-app-state' }, 'App state'),
+          h('a', { href: '#signals-next' }, 'Keep learning'))),
+      h('article.docs-content.signals-content',
+        h('section.docs-section', { id: 'signals-intro' },
+          h('h2', 'A value that can tell you when it changes'),
+          h('p', 'JavaScript values are not observable by default. A signal wraps a value in a stable object with a ', h('code', '.value'), ' property. Update that property and subscribers know immediately; read it in a Preact component and that component automatically subscribes.'),
+          h('div.signals-compare',
+            h('div', h('b', 'One stable reference'), h('p', 'Pass the signal itself through props or context. Its identity stays the same as the value changes.')),
+            h('div', h('b', 'Fine-grained updates'), h('p', 'Only the components and expressions that use a changed value need to update.'))),
+          h('div.docs-note', h('p', h('b', 'Start with the simplest state that fits. '), 'Local component state is still a great default. Signals are useful when you want reactive values shared across components or derived from other state.'))),
+        h('section.docs-section', { id: 'signals-install' },
+          h('h2', 'Install Signals'),
+          h('p', 'Add the Signals package to your Preact project, then import the primitives you need.'),
+          h('div.docs-install-cmd',
+            h('code', '$ npm install @preact/signals'),
+            h('button', { onClick: function () { copyText('npm install @preact/signals', 'install command — copied'); } }, h(Icon, { name: 'copy', size: 12 }), ' copy')),
+          h('p', 'You can also use ', h('code', 'pnpm add @preact/signals'), ' or ', h('code', 'yarn add @preact/signals'), '.')) ,
+        h('section.docs-section', { id: 'signals-basics' },
+          h('h2', 'Create and update a signal'),
+          h('p', 'Use ', h('code', 'signal(initialValue)'), ' to create a signal. Read or update its current value through ', h('code', '.value'), '.'),
+          h(CodeBlock, {
+            code: `import { signal } from '@preact/signals';
+
+const count = signal(0);
+
+console.log(count.value); // 0
+count.value += 1;
+console.log(count.value); // 1`,
+            label: 'count.js',
+            onCopy: function (c) { copyText(c, 'signal example — copied'); }
+          }),
+          h('p', 'Signals notify their subscribers when you assign a different value. For objects and arrays, create and assign a new value rather than mutating a nested property in place.')),
+        h('section.docs-section', { id: 'signals-preact' },
+          h('h2', 'Use signals directly in Preact'),
+          h('p', 'When a component reads ', h('code', 'count.value'), ' during render, Preact tracks that dependency and re-renders the component when it changes. With JSX, you can also pass a signal directly into text or an element attribute; Preact subscribes at that point for a more fine-grained update.'),
+          h('div.signals-demo',
+            h('div.signals-demo-head',
+              h('div', h('small', 'Try it · live signal'), h('h3', 'One value, derived views')),
+              h('span.signals-status', 'reactive')),
+            h('div.signals-counter',
+              h('button', { onClick: function () { setCount(count - 1); }, 'aria-label': 'Decrease count' }, '−'),
+              h('div.signals-count', h('strong', String(count)), h('span', 'current count')),
+              h('button', { onClick: function () { setCount(count + 1); }, 'aria-label': 'Increase count' }, '+')),
+            h('div.signals-derived',
+              h('div', h('span', 'doubled'), h('b', String(count * 2))),
+              h('div', h('span', 'status'), h('b', count >= 5 ? 'in the groove' : 'warming up'))),
+            h('p.signals-demo-note', 'This embedded demo uses ordinary component state to illustrate the same reactive relationship.')),
+          h(CodeBlock, {
+            code: signalCode, label: 'counter.jsx',
+            onCopy: function (c) { copyText(c, 'counter example — copied'); }
+          })),
+        h('section.docs-section', { id: 'signals-derived' },
+          h('h2', 'Derive state with computed'),
+          h('p', 'Use ', h('code', 'computed(fn)'), ' to create a read-only signal from other signals. Dependencies are tracked automatically, and the result is recalculated when one of them changes. Derived state keeps a single source of truth instead of copying values that can fall out of sync.'),
+          h(CodeBlock, {
+            code: computedCode, label: 'computed.js',
+            onCopy: function (c) { copyText(c, 'computed example — copied'); }
+          }),
+          h('p', 'A computed signal is lazy: it recalculates when read after one of its dependencies changes, rather than doing work when no consumer needs the result.')),
+        h('section.docs-section', { id: 'signals-effects' },
+          h('h2', 'Run effects for side effects'),
+          h('p', 'Use ', h('code', 'effect(fn)'), ' when a reactive value needs to synchronize with something outside the signal graph, such as a log or an imperative API. Signals read inside the function become dependencies; the effect reruns when those values change.'),
+          h(CodeBlock, {
+            code: effectCode, label: 'effect.js',
+            onCopy: function (c) { copyText(c, 'effect example — copied'); }
+          }),
+          h('div.docs-note', h('p', h('b', 'Keep effects at the edges. '), 'Prefer computed signals for values derived from other state. Effects are for connecting reactive state to external systems, not for copying one piece of state into another.'))),
+        h('section.docs-section', { id: 'signals-app-state' },
+          h('h2', 'Shape state for a real app'),
+          h('p', 'A small todo list is a useful example: store the list once, then derive the completed count instead of maintaining a second, duplicated counter. Put related signals and computed values together in a state factory when you want isolated instances for testing or multiple app roots.'),
+          h(CodeBlock, {
+            code: todosCode, label: 'todo-state.js',
+            onCopy: function (c) { copyText(c, 'todo state example — copied'); }
+          }),
+          h('p', 'Pass the state object through props for a small tree, or use Preact Context when many descendants need access to it. This keeps dependencies explicit without threading values through every layer.')),
+        h('section.docs-section', { id: 'signals-next' },
+          h('h2', 'Keep learning'),
+          h('p', 'Signals work alongside Preact’s components, hooks, props, and context. Start with local state where it is enough, then introduce signals where shared or derived reactive state makes the design clearer.'),
+          h('div.docs-next',
+            h('a', { href: '#guide' }, 'Back to getting started ', h(Icon, { name: 'arrow', size: 13 })),
+            h('a', { href: 'https://preactjs.com/guide/v11/signals/', target: '_blank', rel: 'noreferrer' }, 'Open the official Signals guide ', h(Icon, { name: 'ext', size: 13 })))),
+        h('div.signals-end',
+          h('span.signals-kicker', 'THE REACTIVE TOOLKIT'),
+          h('h2', 'Keep the model simple. Let updates flow.'),
+          h('p', 'Signals make shared state feel direct: declare the value, derive what you need, and let Preact update the UI that depends on it.'),
+          h('a.btn', { href: '#tutorial' }, 'Try the Preact tutorial ', h(Icon, { name: 'arrow', size: 13 }))))));
 }
 
 function TutorialPage() {
@@ -2752,6 +2936,7 @@ function Toast() {
 function currentRoute() {
   var hash = location.hash.slice(1);
   if (hash === 'docs' || hash.indexOf('docs-') === 0) return 'guide';
+  if (hash === 'signals' || hash === 'guide/v11/signals') return 'signals';
   if (hash === 'blog-islands' || hash === 'blog/islands' || hash === 'blog/simplifying-islands-arch') return 'islands';
   return ['guide', 'tutorial', 'libraries', 'project', 'blog'].indexOf(hash) >= 0 ? hash : 'home';
 }
@@ -2765,7 +2950,7 @@ function App() {
       var next = currentRoute();
       setRoute(next);
       var navRoute = next === 'islands' ? 'blog' : next;
-      if (['home', 'guide', 'tutorial', 'libraries', 'project', 'blog'].indexOf(navRoute) >= 0) setActive(navRoute);
+      if (['home', 'guide', 'signals', 'tutorial', 'libraries', 'project', 'blog'].indexOf(navRoute) >= 0) setActive(navRoute);
     }
     window.addEventListener('hashchange', onHashChange);
     return function () { window.removeEventListener('hashchange', onHashChange); };
@@ -2774,6 +2959,7 @@ function App() {
     var titles = {
       home: 'Preact — build for the web, not the bundle',
       guide: 'Getting started — Preact',
+      signals: 'Signals — Preact Guide v11',
       tutorial: 'Learn Preact — interactive tutorial',
       libraries: 'Libraries and tools — Preact',
       project: 'Project goals — Preact',
@@ -2801,7 +2987,9 @@ function App() {
     h(Header, { active: active }),
     route === 'guide'
       ? h('main', { id: 'guide' }, h(DocsPage))
-      : route === 'tutorial'
+    : route === 'signals'
+      ? h('main', { id: 'signals' }, h(SignalsPage))
+    : route === 'tutorial'
         ? h('main', { id: 'tutorial' }, h(TutorialPage))
         : route === 'libraries'
           ? h('main', { id: 'libraries' }, h(LibrariesPage))
