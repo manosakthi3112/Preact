@@ -1,0 +1,2851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preact — build for the web, not the bundle</title>
+<meta name="description" content="Meet Preact: a lightweight UI library with a familiar component API, a thoughtful ecosystem, hands-on tutorial, and practical guides.">
+<meta name="theme-color" content="#673ab8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='-256%20-256%20512%20512'%3E%3Cpath%20d='M0,-256%20221.7025033688164,-128%20221.7025033688164,128%200,256%20-221.7025033688164,128%20-221.7025033688164,-128z'%20fill='white'/%3E%3Cellipse%20cx='0'%20cy='0'%20rx='75'%20ry='196'%20stroke-width='16'%20stroke-dasharray='387%2060'%20fill='none'%20stroke='%23673ab8'%20transform='rotate(52)'/%3E%3Cellipse%20cx='0'%20cy='0'%20rx='75'%20ry='196'%20stroke-width='16'%20stroke-dasharray='387%2060'%20fill='none'%20stroke='%23673ab8'%20transform='rotate(-52)'/%3E%3Ccircle%20cx='0'%20cy='0'%20r='34'%20fill='%23673ab8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ---------- palette: two inks on paper ---------- */
+:root{
+  --paper:#f7f3ea; --paper2:#efe9db; --ink:#211d16;
+  --faint:#6f675a; --line:rgba(33,29,22,.17);
+  --accent:#673ab8; --acc-soft:rgba(103,58,184,.08);
+  --acc-on-ink:#8f61e1; --str:#8a4a26; --err:#b3392b;
+  --selbg:rgba(103,58,184,.3);
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Archivo','Helvetica Neue',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.22,.61,.2,1);
+}
+[data-theme="dark"]{
+  --paper:#171310; --paper2:#201a15; --ink:#ece4d3;
+  --faint:#a49a87; --line:rgba(236,228,211,.16);
+  --accent:#ae80ff; --acc-soft:rgba(174,128,255,.1);
+  --acc-on-ink:#673ab8; --str:#d0925f; --err:#ff8a72;
+  --selbg:rgba(174,128,255,.35);
+}
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.62 var(--sans);-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:#fdfcf9}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:inherit}
+h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.01em}
+.mono{font-family:var(--mono)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1.25rem,4vw,3rem)}
+.icon{display:block;flex:none}
+.iconw{display:inline-flex;line-height:0;flex:none}
+.iconw svg{display:block}
+.fallback{font:400 13px var(--mono);color:var(--faint);padding:3rem clamp(1.25rem,4vw,3rem)}
+/* paper grain + crop marks (print-lab texture) */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:150;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+body::before{content:"";position:fixed;inset:10px;pointer-events:none;z-index:94;background-repeat:no-repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%231f1b16' stroke-opacity='.3'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%231f1b16' stroke-opacity='.3'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%231f1b16' stroke-opacity='.3'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%231f1b16' stroke-opacity='.3'/%3E%3C/svg%3E");
+  background-position:0 0,100% 0,0 100%,100% 100%}
+[data-theme="dark"] body::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%23ece4d3' stroke-opacity='.25'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%23ece4d3' stroke-opacity='.25'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%23ece4d3' stroke-opacity='.25'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M4.5 0v9M0 4.5h9' stroke='%23ece4d3' stroke-opacity='.25'/%3E%3C/svg%3E")}
+/* ---------- buttons / chips ---------- */
+.btn{display:inline-flex;align-items:center;gap:.55rem;font:500 13px var(--mono);padding:.75rem 1.15rem;border:1px solid var(--ink);color:var(--ink);background:transparent;cursor:pointer;text-decoration:none;transition:background .18s,color .18s,border-color .18s}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.solid{background:var(--accent);border-color:var(--accent);color:#fdfcf9}
+.btn.solid:hover{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;transition:border-color .18s}
+.icon-btn:hover{border-color:var(--ink)}
+.chip{display:inline-flex;align-items:center;gap:.4rem;font:400 12px var(--mono);border:1px solid var(--line);padding:.45rem .7rem;color:var(--faint);text-decoration:none;transition:.18s}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+kbd{border:1px solid var(--line);border-bottom-width:2px;padding:.08rem .3rem;font:500 10px var(--mono);color:var(--faint);border-radius:3px}
+/* ---------- header ---------- */
+.hd{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:1.5rem;height:62px;padding:0 clamp(1.25rem,4vw,3rem);background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .25s}
+.hd.scr{border-bottom-color:var(--line)}
+.brand{display:flex;align-items:center;gap:.55rem;text-decoration:none}
+.brandmark{display:inline-flex;line-height:0}
+.bm-orb{fill:none;stroke:var(--accent);stroke-width:16}
+.bm-e{fill:var(--accent)}
+.bm-hex{fill:#fff;stroke:none}
+.brand-name{font:600 1.15rem var(--serif);letter-spacing:-.01em}
+.brand-suf{font-size:11px;color:var(--faint)}
+.hd-nav{display:flex;gap:1.3rem;margin-left:auto;align-items:center}
+.hd-nav a{font:500 12.5px var(--mono);color:var(--faint);text-decoration:none;letter-spacing:.02em}
+.hd-nav a:hover{color:var(--ink)}
+.hd-nav a.on{color:var(--accent);text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1px}
+.hd-actions{display:flex;gap:.6rem;align-items:center;margin-left:auto}
+.hd-nav + .hd-actions{margin-left:0}
+.gh-btn{display:inline-flex;align-items:center;gap:.5rem;font:500 12px var(--mono);border:1px solid var(--line);padding:.45rem .7rem;color:var(--ink);text-decoration:none;transition:border-color .18s}
+.gh-btn:hover{border-color:var(--ink)}
+.gh-stars{display:inline-flex;align-items:center;gap:.3rem;color:var(--accent)}
+.menu-btn{display:none}
+/* ---------- mobile menu ---------- */
+.mmenu{position:fixed;inset:0;z-index:130;background:var(--paper);display:flex;flex-direction:column;padding:1rem clamp(1.25rem,5vw,2rem) 1.6rem}
+.mmenu{overflow-y:auto}
+.mmenu-head{display:flex;align-items:center;justify-content:space-between;height:46px}
+.mmenu-lab{font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--faint)}
+.mmenu-nav{display:flex;flex-direction:column;margin:auto 0}
+.mmenu-nav a{font:500 clamp(1.9rem,8.5vw,2.8rem) var(--serif);color:var(--ink);text-decoration:none;padding:.6rem 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;opacity:0;animation:mmi .5s var(--ease) both}
+.mmenu-nav a::after{content:"→";font:400 .45em var(--mono);color:var(--accent)}
+.mmenu-nav a:nth-child(2){animation-delay:.05s}
+.mmenu-nav a:nth-child(3){animation-delay:.1s}
+.mmenu-nav a:nth-child(4){animation-delay:.15s}
+.mmenu-nav a:nth-child(5){animation-delay:.2s}
+.mmenu-nav a:nth-child(6){animation-delay:.25s}
+.mmenu-nav a:nth-child(7){animation-delay:.3s}
+.mmenu-foot{display:flex;gap:1.4rem;font-size:12px;flex-wrap:wrap}
+.mmenu-foot a{color:var(--faint);text-decoration:none}
+.mmenu-foot a:hover{color:var(--ink)}
+@keyframes mmi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* ---------- hero ---------- */
+.hero{padding-top:clamp(2.5rem,6vw,4.5rem)}
+.eyebrow{display:flex;align-items:center;gap:.7rem;font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--faint);margin:0}
+.eyebrow::before{content:"";width:9px;height:9px;background:var(--accent);flex:none}
+.hl{font-family:var(--serif);font-size:clamp(2.2rem,8.6vw,7.6rem);line-height:.98;letter-spacing:-.018em;margin:1.2rem 0 .4rem;font-weight:400}
+.hl-line{display:block;white-space:nowrap}
+.hl-line.it .hl-ch{font-style:italic}
+.hl-ch{display:inline-block;white-space:pre;font-variation-settings:'wght' 460,'opsz' 144}
+.hl-sp{white-space:pre}
+.hl-note{font-size:11px;color:var(--faint);letter-spacing:.04em;margin:0 0 1.8rem}
+.hero-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(1.5rem,4vw,3rem);align-items:center}
+.hero-sub{font-size:clamp(1rem,1.35vw,1.14rem);line-height:1.65;max-width:33rem;margin:0 0 1.1rem;color:var(--ink)}
+.hero-proof{border-left:2px solid var(--accent);padding-left:.9rem;margin:0 0 1.4rem;max-width:31rem;font-size:.98rem}
+.hero-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;font-size:12px;color:var(--faint);margin:0 0 1.8rem}
+.hero-meta span+span::before{content:"·";margin-right:1.1rem;color:var(--accent)}
+.hero-ctas{display:flex;gap:.8rem;flex-wrap:wrap}
+/* atom */
+.atom-fig{margin:0}
+.atomw{display:block}
+.atomw svg{width:100%;max-width:400px;display:block;margin:0 auto;overflow:visible;cursor:pointer}
+.orbit ellipse{fill:none;stroke:var(--accent);stroke-width:1.4;opacity:.75}
+.orbit .e circle{fill:var(--accent)}
+.nucleus{transform-box:fill-box;transform-origin:center}
+.nucleus.pulse{animation:npulse .5s var(--ease)}
+@keyframes npulse{40%{transform:scale(1.1) rotate(3deg)}}
+.hex{fill:var(--paper);stroke:var(--ink);stroke-width:2.4}
+.atom-p{font:600 54px var(--serif);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.fig{margin-top:.9rem;font:400 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-align:center}
+/* scale figure */
+.scale{margin:clamp(3rem,7vw,5rem) 0 0}
+.scale-labels{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;font-size:11px;color:var(--faint);margin-bottom:.55rem}
+.sl-a b{color:var(--accent);font-weight:600}
+.sl-x{color:var(--ink);font-weight:600;font-size:13px}
+.scale-track{position:relative;height:16px;border:1px solid var(--ink);cursor:help}
+.scale-fill{position:absolute;top:0;left:0;bottom:0;width:0;background:var(--accent);transition:width 1.1s var(--ease) .25s}
+.scale.in .scale-fill{width:8.9%}
+.scale-track:hover .scale-fill{background:var(--ink)}
+.scale-mid{font:italic 400 clamp(.95rem,1.6vw,1.15rem) var(--serif);color:var(--faint);margin:.7rem 0 0 10%}
+/* ---------- ticker ---------- */
+.ticker{border-block:1px solid var(--line);overflow:hidden;margin-top:clamp(3rem,7vw,5rem)}
+.ticker-row{display:flex;width:max-content;padding:.7rem 0;animation:tks 38s linear infinite}
+.ticker:hover .ticker-row{animation-play-state:paused}
+.tk{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.16em;padding:0 .9rem;color:var(--faint);white-space:nowrap}
+.tk-dot{color:var(--accent);font:400 12px var(--mono);align-self:center}
+@keyframes tks{to{transform:translateX(-50%)}}
+/* ---------- sections ---------- */
+.sec{padding-top:clamp(4.5rem,9vw,8rem)}
+.sec-head{border-top:1px solid var(--line);padding-top:1.1rem}
+.kicker{display:flex;gap:.2rem;align-items:baseline;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.kicker .kn{color:var(--accent);font-weight:600}
+.sec-title{font-size:clamp(1.9rem,3.6vw,3rem);line-height:1.04;margin:.65rem 0 .8rem}
+.sec-title em{font-style:italic}
+.sec-sub{max-width:46rem;color:var(--ink);opacity:.85;margin:0;font-size:1rem}
+/* code tokens */
+.tk-c{color:var(--faint);font-style:italic}
+.tk-s,.tk-n{color:var(--str)}
+.tk-k{color:var(--accent);font-weight:600}
+.tk-f{font-weight:600}
+/* ---------- why: ledger accordion ---------- */
+.led{margin-top:2.6rem;border-top:1px solid var(--line)}
+.led-row{border-bottom:1px solid var(--line)}
+.led-head{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto 2rem;gap:1rem;align-items:baseline;width:100%;padding:1.35rem .25rem;background:none;border:0;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.led-idx{font-size:12px;color:var(--faint);transition:color .2s}
+.led-title{font:500 clamp(1.25rem,2vw,1.55rem) var(--serif);letter-spacing:-.01em;transition:color .2s}
+.led-k{font-size:11px;color:var(--faint);letter-spacing:.04em}
+.led-x{color:var(--faint);transition:transform .3s var(--ease);align-self:center}
+.led-x.rot{transform:rotate(45deg);color:var(--accent)}
+.led-head:hover .led-idx,.led-head:hover .led-title{color:var(--accent)}
+.led-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease)}
+.led-row.open .led-body{grid-template-rows:1fr}
+.led-inner{overflow:hidden}
+.led-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(1.5rem,4vw,3rem);padding:.2rem .25rem 1.7rem 4.2rem}
+.led-p{margin:0;max-width:34rem;font-size:.97rem;line-height:1.68;color:var(--ink);opacity:.9}
+/* codeblock */
+.codeblock{border:1px solid var(--line);background:var(--paper2);overflow:hidden}
+.cb-head{display:flex;justify-content:space-between;align-items:center;padding:.5rem .8rem;border-bottom:1px solid var(--line);font:400 10.5px var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--faint)}
+.cb-copy{display:inline-flex;align-items:center;gap:.35rem;background:none;border:0;color:var(--faint);font:400 10.5px var(--mono);letter-spacing:.04em;cursor:pointer;padding:0;text-transform:none}
+.cb-copy:hover{color:var(--ink)}
+.codeblock pre{margin:0;padding:.95rem 1rem;overflow-x:auto;font:400 12.75px/1.65 var(--mono)}
+/* ---------- playground ---------- */
+.pg-tabs{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin:2.4rem 0 1.1rem}
+.pg-tab{font:500 12.5px var(--mono);padding:.45rem .8rem;border:1px solid var(--line);background:transparent;color:var(--faint);cursor:pointer;transition:.15s}
+.pg-tab:hover{border-color:var(--ink);color:var(--ink)}
+.pg-tab.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pg-tagline{flex:1;min-width:140px;margin-left:.5rem;font:400 11px var(--mono);color:var(--faint)}
+.pg-run{display:inline-flex;align-items:center;gap:.5rem;font:500 12px var(--mono);padding:.45rem .8rem;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:.15s}
+.pg-run:hover{background:var(--ink);color:var(--paper)}
+.pg-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);border:1px solid var(--ink);background:var(--paper)}
+.editor{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
+.ed-scroll{display:flex;height:440px;overflow:hidden}
+.ed-gut{flex:none;width:3.1rem;padding:16px 8px 16px 4px;overflow:hidden;text-align:right;color:var(--faint);opacity:.7;font:400 13px/1.7 var(--mono);user-select:none}
+.ed-gut span{display:block}
+.ed-stack{position:relative;flex:1;min-width:0}
+.ed-hl,.src{font:500 13px/1.7 var(--mono);letter-spacing:0;font-variant-ligatures:none;tab-size:2;padding:16px 18px;white-space:pre;margin:0;border:0}
+.ed-hl{position:absolute;inset:0;overflow:hidden;pointer-events:none;color:var(--ink)}
+.ed-hl code{display:block}
+.src{position:absolute;inset:0;width:100%;height:100%;resize:none;overflow:auto;background:transparent;color:transparent;caret-color:var(--accent);outline:none;-webkit-appearance:none;border-radius:0;display:block}
+.src::selection{background:var(--selbg);color:transparent}
+.src::-webkit-scrollbar{display:none}
+.src{scrollbar-width:none}
+.ed-bar{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.5rem .8rem;border-top:1px solid var(--line);font:400 11px var(--mono);color:var(--faint)}
+.ed-status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;flex:1;min-width:0}
+.ed-status.bad{color:var(--err)}
+.stage{display:flex;flex-direction:column;min-width:0}
+.stage-head{padding:.55rem .8rem;border-bottom:1px solid var(--line);font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--faint)}
+.stage-view{flex:1;min-height:396px;padding:1.25rem;background:var(--paper2)}
+/* things rendered by the playground itself */
+.pg-root{display:grid;gap:.85rem;align-content:start;width:100%}
+.pg-root .pg-btn{font:500 13px var(--mono);padding:.6rem 1rem;background:var(--ink);color:var(--paper);border:0;cursor:pointer;transition:background .15s}
+.pg-root .pg-btn:hover{background:var(--accent)}
+.pg-root .pg-btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.pg-root .pg-btn.ghost:hover{background:transparent;border-color:var(--accent);color:var(--accent)}
+.pg-root form{display:flex;gap:.5rem}
+.pg-root input:not([type]){flex:1;min-width:0;font:400 13px var(--mono);padding:.6rem .75rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);outline:none}
+.pg-root input:not([type]):focus{border-color:var(--accent)}
+.pg-root ul{list-style:none;margin:0;padding:0}
+.pg-root li{display:flex;gap:.55rem;align-items:baseline;padding:.5rem .15rem;border-bottom:1px solid var(--line);font:400 13px var(--mono);cursor:pointer;transition:color .15s}
+.pg-root li:hover{color:var(--accent)}
+.pg-root li.done,.pg-root li.done:hover{color:var(--faint);text-decoration:line-through}
+.pg-root li .x{color:var(--accent);font-weight:600}
+.pg-root li.done .x{color:var(--faint)}
+.pg-meta{margin:0;font:400 11px var(--mono);color:var(--faint)}
+.pg-clock{font:600 clamp(2.2rem,5vw,3rem)/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.pg-row{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;font:500 14px var(--mono)}
+.pg-row input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.pg-out{white-space:nowrap;font-variant-numeric:tabular-nums}
+.pg-foot{margin:1rem 0 0;font:400 12px var(--mono);color:var(--faint);line-height:1.7}
+.pg-foot code{color:var(--str)}
+/* ---------- compare ---------- */
+.cmp{margin-top:2.6rem}
+.cmp-row{display:grid;grid-template-columns:11rem minmax(0,1fr) 6.5rem;grid-template-areas:"name mid val";gap:.4rem 1.4rem;align-items:center;padding:1rem .5rem;border-bottom:1px solid var(--line);transition:background .2s;cursor:help}
+.cmp-row:first-child{border-top:1px solid var(--line)}
+.cmp-row:hover{background:var(--acc-soft)}
+.cmp-name{grid-area:name;font:500 13px var(--mono)}
+.cmp-mid{grid-area:mid}
+.cmp-track{height:34px;border:1px solid var(--line)}
+.cmp-fill{height:100%;width:0;background-color:var(--paper2);background-image:repeating-linear-gradient(-45deg,var(--line) 0 1px,transparent 1px 6px);transition:width .9s var(--ease)}
+.cmp-row.is-me .cmp-fill{background:var(--accent);background-image:none}
+.cmp-row.is-me .cmp-name{color:var(--accent);font-weight:600}
+.cmp-val{grid-area:val;font:500 12px var(--mono);text-align:right;color:var(--faint)}
+.cmp-row.is-me .cmp-val{color:var(--accent)}
+.cmp-cap{margin:1.1rem 0 0;font:italic 400 .95rem var(--serif);color:var(--faint);min-height:1.5em}
+.cmp-foot{margin:.8rem 0 0;font:400 11px var(--mono);color:var(--faint);line-height:1.7}
+/* ---------- ecosystem ---------- */
+.eco{margin-top:2.6rem}
+.eco-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:clamp(1.5rem,4vw,3.5rem);padding:clamp(2rem,4vw,3rem) 0;border-top:1px solid var(--line);align-items:center}
+.eco-row.flip .eco-art{order:-1}
+.eco-idx{font:500 11px var(--mono);color:var(--accent);letter-spacing:.18em}
+.eco-name{font-size:clamp(1.35rem,2.2vw,1.65rem);margin:.5rem 0 .8rem}
+.eco-tag{font:400 11.5px var(--mono);color:var(--faint);margin-left:.4rem}
+.eco-p{margin:0 0 1rem;max-width:34rem;font-size:.97rem;line-height:1.68;color:var(--ink);opacity:.9}
+.eco-p code{font:500 13px var(--mono);background:var(--acc-soft);padding:.08rem .3rem}
+.eco-links{display:flex;gap:.6rem;flex-wrap:wrap}
+.eco-stack{display:grid;gap:.8rem}
+/* signals demo */
+.sig{border:1px solid var(--line);background:var(--paper);padding:1rem 1.1rem 1.1rem;display:grid;gap:.9rem}
+.sig-head{display:flex;justify-content:space-between;font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--faint)}
+.sig-head span:last-child{color:var(--accent)}
+.sig-ctl{display:flex;align-items:center;gap:.8rem}
+.sig-lab{font:500 12px var(--mono);color:var(--faint)}
+.sig-input{flex:1;accent-color:var(--accent)}
+.sig-row{display:flex;gap:.55rem;flex-wrap:wrap}
+.sig-chip{display:inline-flex;gap:.55rem;align-items:baseline;border:1px solid var(--line);padding:.5rem .7rem;font:400 12.5px var(--mono);background:var(--paper);transition:border-color .35s,color .35s,background .35s}
+.sig-chip b{font-weight:600}
+.sig-chip span{color:var(--faint);font-size:11px}
+.sig-chip.hot{border-color:var(--accent);color:var(--accent);background:var(--acc-soft)}
+.sig-chip.hot span{color:var(--accent)}
+.sig-foot{display:grid;gap:.3rem;font:400 11px var(--mono);color:var(--faint);line-height:1.6}
+.sig-writes{color:var(--accent)}
+/* terminal */
+.term{background:var(--ink);color:var(--paper);max-width:560px}
+.term-head{display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border-bottom:1px solid rgba(128,120,105,.35);font:400 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.term-title{opacity:.6}
+.term-dot{width:8px;height:8px;background:var(--acc-on-ink);flex:none}
+.term-copy{margin-left:auto;display:inline-flex;align-items:center;gap:.35rem;background:none;border:0;color:inherit;opacity:.6;font:400 10.5px var(--mono);letter-spacing:normal;text-transform:none;cursor:pointer;padding:0}
+.term-copy:hover{opacity:1}
+.term-body{padding:1rem 1.1rem;font:500 13.5px/1.6 var(--mono)}
+.prompt{color:var(--acc-on-ink);margin-right:.6em;font-weight:600}
+.term-out{margin:.55rem 0 0;font-size:12px;opacity:.62}
+/* receipt */
+.receipt{list-style:none;margin:0 0 1rem;padding:0}
+.receipt li{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px dotted var(--line);padding:.5rem 0;font:400 12px var(--mono);color:var(--faint)}
+.receipt b{color:var(--ink);font-weight:500;text-align:right}
+/* ---------- ship ---------- */
+.ship-title{font-size:clamp(2.6rem,6.5vw,5rem);line-height:1.02;margin:.9rem 0 1.2rem;letter-spacing:-.015em}
+.ship-title em{color:var(--accent)}
+.ship-sub{max-width:40rem;font-size:clamp(1rem,1.3vw,1.12rem);margin:0}
+.ship-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:1.6rem;align-items:end;margin-top:2.2rem}
+.ship-btns{display:flex;gap:.8rem;flex-wrap:wrap}
+.sec-ship{padding-bottom:clamp(3rem,7vw,6rem)}
+/* ---------- footer ---------- */
+.foot{border-top:1px solid var(--ink);margin-top:clamp(4rem,8vw,7rem);padding:2.6rem 0 1.6rem}
+.foot-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,.7fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+.foot-col{margin:0;font-size:.95rem;line-height:1.66;max-width:34rem}
+.foot-col b{font-weight:600}
+.foot-links{display:flex;flex-direction:column;gap:.6rem;font:400 12.5px var(--mono)}
+.foot-links a{color:var(--faint);text-decoration:none;display:inline-flex;gap:.35rem;align-items:center}
+.foot-links a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.foot-last{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line);font:400 11px var(--mono);color:var(--faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.foot-last a{color:var(--faint);text-decoration:none}
+.foot-last a:hover{color:var(--ink)}
+/* ---------- documentation view ---------- */
+.docs-hero{padding:clamp(2.5rem,6vw,4.5rem) 0 2.5rem;border-bottom:1px solid var(--line)}
+.docs-crumb{display:flex;align-items:center;gap:.55rem;margin:0 0 1rem;font:400 11px var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--faint)}
+.docs-crumb a{color:var(--accent);text-decoration:none}
+.docs-title{font-size:clamp(2.6rem,6vw,5rem);line-height:1.02;margin:0 0 1rem;letter-spacing:-.025em}
+.docs-lede{max-width:46rem;font-size:clamp(1rem,1.5vw,1.2rem);margin:0;color:var(--faint)}
+.docs-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:clamp(2rem,6vw,5rem);padding-top:2.5rem}
+.docs-sidebar{position:sticky;top:88px;align-self:start;border-left:1px solid var(--line);padding:.25rem 0 .25rem 1rem}
+.docs-sidebar b{display:block;margin:0 0 .8rem;font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--faint)}
+.docs-sidebar nav{display:grid;gap:.25rem}
+.docs-sidebar a{padding:.45rem .6rem;color:var(--faint);font-size:.9rem;text-decoration:none;border-left:2px solid transparent;margin-left:-1.06rem}
+.docs-sidebar a:hover,.docs-sidebar a:focus-visible{color:var(--accent);border-left-color:var(--accent)}
+.docs-content{min-width:0;max-width:760px}
+.docs-section{padding:0 0 2.7rem;scroll-margin-top:88px}
+.docs-section+.docs-section{border-top:1px solid var(--line);padding-top:2rem}
+.docs-section h2{font-size:clamp(1.65rem,3vw,2.2rem);line-height:1.12;margin:0 0 .75rem}
+.docs-section h3{font-size:1.2rem;margin:1.8rem 0 .5rem}
+.docs-section p{max-width:66ch}
+.docs-section a{color:var(--accent);text-underline-offset:3px}
+.docs-note{padding:1rem 1.1rem;border-left:3px solid var(--accent);background:var(--acc-soft);margin:1.25rem 0}
+.docs-note p{margin:0}
+.docs-install{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin:1.2rem 0 .8rem}
+.docs-install-tabs{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.docs-install button{font:500 12px var(--mono);padding:.5rem .75rem;border:1px solid var(--line);background:transparent;color:var(--faint);cursor:pointer}
+.docs-install button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.docs-install .cb-copy{margin-left:auto;padding:.5rem .3rem}
+.docs-install-cmd{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem 1rem;background:var(--paper2);border:1px solid var(--line);font:400 13px var(--mono)}
+.docs-install-cmd code{overflow-wrap:anywhere}
+.docs-install-cmd button{display:inline-flex;align-items:center;gap:.35rem;flex:none;border:0;background:transparent;color:var(--faint);font:400 11px var(--mono);cursor:pointer}
+.docs-code{margin:1rem 0 0}
+.docs-next{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem}
+.docs-next a{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem .9rem;border:1px solid var(--line);text-decoration:none}
+.docs-next a:hover{border-color:var(--accent)}
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:200;background:var(--ink);color:var(--paper);padding:.6rem 1rem;font:400 12.5px var(--mono);display:flex;gap:.55rem;align-items:center;max-width:min(90vw,480px);animation:tst .3s var(--ease)}
+.toast .iconw{color:var(--acc-on-ink)}
+@keyframes tst{from{opacity:0;transform:translate(-50%,10px)}}
+/* ---------- reveal ---------- */
+html.js .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+html.js .reveal.in{opacity:1;transform:none}
+/* ---------- responsive ---------- */
+.explore{padding:clamp(2.2rem,5vw,4rem) 0 0}
+.explore-head{display:flex;justify-content:space-between;align-items:end;gap:1.5rem;margin-bottom:1rem}
+.explore-head h2{font-size:clamp(1.5rem,3vw,2.2rem);margin:0;letter-spacing:-.055em}
+.explore-head p{max-width:28rem;margin:0;color:var(--faint);font-size:.92rem}
+.explore-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.explore-card{display:flex;flex-direction:column;min-height:205px;padding:1.25rem;border:1px solid var(--line);border-radius:16px;background:var(--paper2);text-decoration:none;transition:transform .2s var(--ease),border-color .2s}
+.explore-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.explore-card span{font:500 11px var(--mono);letter-spacing:.08em;color:var(--accent)}
+.explore-card b{margin:.8rem 0 .45rem;font-size:1.15rem;letter-spacing:-.04em}
+.explore-card p{margin:0;color:var(--faint);font-size:.9rem}
+.explore-card em{margin-top:auto;padding-top:1rem;color:var(--accent);font-size:.85rem;font-style:normal}
+.faq-list{margin-top:1.8rem;border-top:1px solid var(--line)}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-item summary{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:1rem .15rem;font-weight:600;cursor:pointer;list-style:none}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:"+";font:400 1.4rem var(--sans);color:var(--accent)}
+.faq-item[open] summary::after{content:"−"}
+.faq-item p{max-width:68ch;margin:0;padding:0 2rem 1.1rem .15rem;color:var(--faint)}
+.resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-top:2rem}
+.resource-card{display:flex;flex-direction:column;min-height:210px;padding:1.3rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);text-decoration:none;transition:transform .2s var(--ease),border-color .2s}
+.resource-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.resource-card .resource-tag{font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.resource-card b{margin:.7rem 0 .4rem;font-size:1.2rem;letter-spacing:-.04em}
+.resource-card p{margin:0;color:var(--faint);font-size:.9rem}
+.resource-card em{margin-top:auto;padding-top:1rem;color:var(--accent);font-size:.85rem;font-style:normal}
+.hero{position:relative;isolation:isolate;padding:clamp(2.4rem,5vw,4.2rem) 0 clamp(2.2rem,4vw,3.5rem);background:radial-gradient(ellipse at 78% 28%,rgba(192,163,255,.32),transparent 38%),linear-gradient(135deg,#f3efff 0%,var(--paper) 58%,#f8f4ff 100%);border-bottom:1px solid var(--line);overflow:hidden}
+[data-theme="dark"] .hero{background:radial-gradient(ellipse at 78% 28%,rgba(103,58,184,.32),transparent 38%),linear-gradient(135deg,#20182c 0%,var(--paper) 58%,#191421 100%)}
+.hero>.wrap{position:relative;z-index:1}
+.hero .eyebrow{display:inline-flex;align-items:center;gap:.55rem;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--paper) 75%,transparent);padding:.5rem .8rem}
+.hero .hl{max-width:1100px;font-size:clamp(3.6rem,7.4vw,7rem);line-height:.94;letter-spacing:-.085em;margin:1.15rem 0 .75rem}
+.hero .hl-line.it .hl-ch{color:var(--accent)}
+.hero .hl-note{font-size:clamp(1rem,1.5vw,1.15rem);margin:0 0 clamp(1.5rem,3vw,2.3rem);color:var(--faint)}
+.hero-grid{grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);gap:clamp(2rem,6vw,6rem)}
+.hero-grid>div:first-child{max-width:620px}
+.hero-sub{font-size:clamp(1.15rem,1.8vw,1.45rem);line-height:1.5}
+.hero-proof{padding-top:1rem;font-size:1rem}
+.hero-ctas .btn{min-height:48px}
+.atom-fig{position:relative;padding:clamp(1rem,2vw,1.5rem);border-radius:28px;background:color-mix(in srgb,var(--paper) 78%,transparent);box-shadow:0 26px 70px rgba(53,31,94,.12)}
+.atomw svg{max-width:460px}
+.fig{font-size:10px;color:var(--faint)}
+.scale-grid{margin-top:clamp(2.5rem,5vw,4.5rem)}
+.scale-point{min-height:112px;align-content:center;background:color-mix(in srgb,var(--paper) 64%,transparent)}
+.scale-point b{font-size:1.3rem}
+.ticker{margin-top:clamp(2rem,4vw,3.5rem);border-color:rgba(103,58,184,.24)}
+.explore{padding-top:clamp(3rem,6vw,5rem)}
+.explore-head h2{font-size:clamp(1.8rem,3.3vw,2.5rem)}
+.explore-card{min-height:235px;padding:1.5rem;background:linear-gradient(145deg,var(--paper2),var(--paper))}
+.explore-card b{font-size:1.28rem}
+.sec{padding-top:clamp(5rem,9vw,8rem)}
+.led-row,.cmp-card,.resource-card{box-shadow:0 10px 36px rgba(39,25,65,.035)}
+.sec-ship{position:relative}
+.blog-intro{padding-bottom:2.5rem;border-bottom:1px solid var(--line)}
+.blog-intro h1{max-width:900px}
+.blog-featured{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(280px,.95fr);min-height:310px;overflow:hidden;margin:2.4rem 0 4rem;border:1px solid var(--line);border-radius:24px;background:var(--paper2);text-decoration:none}
+.blog-feature-copy{display:flex;flex-direction:column;align-items:flex-start;padding:clamp(1.4rem,4vw,3rem)}
+.blog-feature-copy .resource-tag{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.blog-feature-copy h2{font-size:clamp(2rem,4vw,3.5rem);line-height:1.02;letter-spacing:-.065em;margin:1rem 0 .8rem}
+.blog-feature-copy p{max-width:44ch;margin:0;color:var(--faint)}
+.blog-feature-copy em{margin-top:auto;padding-top:1.7rem;color:var(--accent);font-size:.9rem;font-style:normal}
+.blog-feature-art{position:relative;display:grid;place-items:center;min-height:260px;overflow:hidden;background:linear-gradient(135deg,#31175e,#673ab8 55%,#9c70e5);color:white}
+.blog-feature-art::before,.blog-feature-art::after{content:"";position:absolute;border:1px solid rgba(255,255,255,.3);border-radius:50%;width:min(33vw,360px);aspect-ratio:1;transform:rotate(-28deg) scaleY(.48)}
+.blog-feature-art::after{transform:rotate(35deg) scaleY(.48)}
+.blog-feature-mark{position:relative;display:grid;place-items:center;width:150px;aspect-ratio:1;border:1px solid rgba(255,255,255,.55);border-radius:34px;background:rgba(255,255,255,.13);backdrop-filter:blur(8px);font-size:4.4rem;font-weight:700;letter-spacing:-.1em;box-shadow:0 24px 70px rgba(19,5,43,.25)}
+.blog-feature-mark span{position:absolute;right:-22px;top:-20px;border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:.4rem .6rem;background:#fff;color:#673ab8;font:500 10px var(--mono);letter-spacing:.08em}
+.blog-list-head{display:flex;align-items:end;justify-content:space-between;gap:1.5rem}
+.blog-list-head h2{margin:.4rem 0 .5rem;font-size:clamp(1.8rem,3.5vw,2.7rem);letter-spacing:-.06em}
+.blog-list-head p{margin:0;color:var(--faint)}
+.blog-filters{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0}
+.blog-filters button{border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--faint);padding:.55rem .8rem;font:500 11px var(--sans);cursor:pointer;transition:background .18s,color .18s,border-color .18s}
+.blog-filters button:hover,.blog-filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.blog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.blog-card{display:flex;flex-direction:column;min-height:220px;padding:1.4rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);text-decoration:none;transition:transform .2s var(--ease),border-color .2s,box-shadow .2s}
+.blog-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 18px 48px rgba(39,25,65,.1)}
+.blog-card b{margin:.85rem 0 .45rem;font-size:1.22rem;letter-spacing:-.045em}
+.blog-card p{margin:0;color:var(--faint);font-size:.92rem}
+.blog-card em{margin-top:auto;padding-top:1.25rem;color:var(--accent);font-size:.85rem;font-style:normal}
+.blog-outro{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;margin:3rem 0;padding:clamp(1.4rem,3vw,2.2rem);border-radius:18px;background:var(--paper2)}
+.blog-outro h2{margin:0 0 .35rem;font-size:1.4rem;letter-spacing:-.04em}
+.blog-outro p{margin:0;color:var(--faint);font-size:.92rem}
+.blog-outro .btn{flex:none}
+.hl-word{display:inline-block;white-space:nowrap}
+.hl-space{white-space:pre;margin-inline:.1em}
+.usecase-section{position:relative;overflow:hidden}
+.usecase-section::before{content:"";position:absolute;top:5rem;right:-8rem;width:22rem;height:22rem;border-radius:50%;background:radial-gradient(circle,rgba(174,128,255,.12),transparent 68%);pointer-events:none}
+.usecase-section>.wrap{position:relative}
+.usecase-head{max-width:760px;margin-bottom:2rem}
+.usecase-head .kicker{display:flex;align-items:center;gap:.6rem;font-size:11px;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+.usecase-head .kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.usecase-head h2{font-size:clamp(2.2rem,5vw,4rem);line-height:1.02;letter-spacing:-.07em;margin:.8rem 0}
+.usecase-head p{max-width:58ch;color:var(--faint);font-size:1.05rem;margin:0}
+.usecase-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}
+.usecase-card{position:relative;display:flex;flex-direction:column;min-height:250px;padding:1.35rem;border:1px solid var(--line);border-radius:18px;background:var(--paper);text-decoration:none;transition:transform .2s var(--ease),border-color .2s,box-shadow .2s}
+.usecase-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 18px 48px rgba(39,25,65,.1)}
+.usecase-num{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--acc-soft);color:var(--accent);font:600 12px var(--mono)}
+.usecase-card h3{margin:1.4rem 0 .5rem;font-size:1.22rem;letter-spacing:-.045em}
+.usecase-card p{margin:0;color:var(--faint);font-size:.9rem}
+.usecase-card em{margin-top:auto;padding-top:1.2rem;color:var(--accent);font-size:.83rem;font-style:normal}
+.workflow{padding:clamp(2rem,5vw,3.5rem);border:1px solid rgba(255,255,255,.13);border-radius:24px;background:linear-gradient(130deg,#241637,#352050 56%,#4c2d77);color:#fff}
+.workflow-head{display:flex;align-items:end;justify-content:space-between;gap:2rem;margin-bottom:2rem}
+.workflow-head .kicker{font:500 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#cdb7ff}
+.workflow-head h2{max-width:650px;margin:.7rem 0 0;font-size:clamp(2rem,4vw,3.4rem);line-height:1.02;letter-spacing:-.06em}
+.workflow-head p{max-width:330px;margin:0;color:rgba(255,255,255,.74);font-size:.93rem}
+.workflow-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.workflow-step{padding:1.2rem;border-top:1px solid rgba(255,255,255,.28)}
+.workflow-step span{font:500 11px var(--mono);color:#cdb7ff}
+.workflow-step h3{margin:.8rem 0 .4rem;font-size:1.15rem;letter-spacing:-.035em}
+.workflow-step p{margin:0;color:rgba(255,255,255,.72);font-size:.9rem}
+.workflow-step a{display:inline-block;margin-top:.85rem;color:#e5d8ff;font-size:.83rem;text-underline-offset:3px}
+.blog-intro{padding-top:clamp(3rem,7vw,6rem)}
+.blog-featured:hover{border-color:var(--accent);box-shadow:0 20px 60px rgba(45,25,80,.1);transform:translateY(-2px)}
+.blog-featured{transition:transform .25s var(--ease),border-color .25s,box-shadow .25s}
+.blog-card .resource-tag{font:600 10px var(--mono);letter-spacing:.1em}
+.blog-card:nth-child(3n+2){background:linear-gradient(150deg,var(--paper2),var(--paper))}
+.blog-card:nth-child(3n){background:linear-gradient(150deg,var(--paper),color-mix(in srgb,var(--paper2) 65%,var(--paper)))}
+.blog-list{padding-top:.5rem}
+.article-wrap{max-width:1240px;margin:0 auto;padding:0 clamp(1.25rem,5vw,4rem)}
+.article-topline{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.25rem 0;border-bottom:1px solid var(--line)}
+.article-back{display:inline-flex;align-items:center;gap:.45rem;color:var(--faint);font-size:.82rem;text-decoration:none}
+.article-back:hover{color:var(--accent)}
+.article-source{font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);text-decoration:none}
+.article-source:hover{text-decoration:underline;text-underline-offset:3px}
+.article-hero{position:relative;overflow:hidden;padding:clamp(3rem,7vw,6rem) 0 clamp(2.5rem,5vw,4.5rem)}
+.article-hero::after{content:"";position:absolute;z-index:-1;top:-8rem;right:-6rem;width:min(50vw,540px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(174,128,255,.22),transparent 70%)}
+.article-hero .eyebrow{margin-bottom:1.25rem}
+.article-title{max-width:980px;margin:0 0 1.2rem;font-size:clamp(3rem,8vw,7rem);line-height:.94;letter-spacing:-.085em}
+.article-deck{max-width:700px;margin:0;color:var(--faint);font-size:clamp(1.1rem,1.8vw,1.35rem);line-height:1.6}
+.article-meta{display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;margin-top:1.8rem;color:var(--faint);font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.article-meta span+span::before{content:"·";margin-right:1.4rem;color:var(--accent)}
+.island-visual{position:relative;display:grid;grid-template-columns:1fr auto 1.25fr auto 1fr;align-items:center;gap:clamp(.5rem,2vw,1.5rem);max-width:1060px;margin:0 auto;padding:clamp(1.2rem,3vw,2.4rem);border:1px solid var(--line);border-radius:24px;background:linear-gradient(140deg,var(--paper2),var(--paper));box-shadow:0 24px 70px rgba(39,25,65,.08)}
+.island-stage{min-width:0;padding:1rem;border:1px solid var(--line);border-radius:15px;background:var(--paper)}
+.island-stage-label{display:block;margin-bottom:.9rem;color:var(--faint);font:500 9px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.island-page{display:grid;gap:.45rem}
+.island-page span{display:block;height:9px;border-radius:99px;background:var(--line)}
+.island-page span:nth-child(1){width:54%;height:15px;background:color-mix(in srgb,var(--accent) 24%,var(--paper2))}
+.island-page span:nth-child(2){width:92%}
+.island-page span:nth-child(3){width:78%}
+.island-page span:nth-child(4){width:88%}
+.island-page .island-widget{display:flex;align-items:center;justify-content:space-between;width:100%;height:auto;margin-top:.45rem;padding:.65rem .7rem;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:9px;background:var(--acc-soft);color:var(--ink);font:500 10px var(--mono)}
+.island-page .island-widget b{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;background:var(--accent);color:#fff;font-size:14px}
+.island-page .island-static{width:72%;margin-top:.3rem;background:color-mix(in srgb,var(--line) 65%,var(--paper))}
+.island-arrow{color:var(--accent);font-size:1.3rem;text-align:center}
+.island-static-stage{background:color-mix(in srgb,var(--paper2) 66%,var(--paper))}
+.island-static-stage .island-widget{border-style:dashed;color:var(--accent)}
+.island-caption{grid-column:1/-1;margin:.25rem 0 0;color:var(--faint);font-size:.79rem;text-align:center}
+.article-layout{display:grid;grid-template-columns:190px minmax(0,760px);justify-content:center;gap:clamp(2rem,7vw,6rem);padding:clamp(3rem,7vw,5.5rem) 0}
+.article-toc{position:sticky;top:100px;align-self:start;padding:.25rem 0 .25rem 1rem;border-left:1px solid var(--line)}
+.article-toc b{display:block;margin-bottom:.75rem;color:var(--faint);font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.article-toc nav{display:grid;gap:.25rem}
+.article-toc a{padding:.35rem 0;color:var(--faint);font-size:.8rem;text-decoration:none}
+.article-toc a:hover{color:var(--accent)}
+.article-body{min-width:0}
+.article-body section{padding:0 0 2.5rem;scroll-margin-top:100px}
+.article-body section+section{padding-top:2rem;border-top:1px solid var(--line)}
+.article-body h2{margin:0 0 .9rem;font-size:clamp(1.65rem,3vw,2.25rem);line-height:1.12;letter-spacing:-.055em}
+.article-body h3{margin:1.6rem 0 .55rem;font-size:1.2rem;letter-spacing:-.04em}
+.article-body p{max-width:68ch;color:var(--faint);line-height:1.8}
+.article-body a{color:var(--accent);text-underline-offset:3px}
+.article-body .codeblock{margin:1.2rem 0 1.4rem}
+.article-callout{margin:1.5rem 0;padding:1.1rem 1.2rem;border-left:3px solid var(--accent);border-radius:0 12px 12px 0;background:var(--acc-soft)}
+.article-callout p{margin:0;color:var(--ink);font-size:.94rem}
+.article-callout p+p{margin-top:.7rem}
+.article-checklist{display:grid;gap:.75rem;margin:1.2rem 0;padding:0;list-style:none}
+.article-checklist li{position:relative;padding:.8rem 1rem .8rem 2.6rem;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.article-checklist li::before{content:"✓";position:absolute;left:1rem;top:.8rem;color:var(--accent);font-weight:700}
+.article-end{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:.5rem;padding-top:1.5rem;border-top:1px solid var(--line)}
+.article-end a{font-size:.86rem}
+.article-related{padding:2rem 0 4rem;border-top:1px solid var(--line)}
+.article-related-head{display:flex;align-items:end;justify-content:space-between;gap:1rem}
+.article-related-head h2{margin:.4rem 0 0;font-size:clamp(1.7rem,3vw,2.3rem);letter-spacing:-.055em}
+.article-related-head>a{color:var(--accent);font-size:.85rem;text-decoration:none}
+@media(max-width:820px){
+  .island-visual{grid-template-columns:1fr;max-width:500px}
+  .island-arrow{transform:rotate(90deg)}
+  .island-caption{grid-column:1}
+  .article-layout{grid-template-columns:minmax(0,1fr);gap:1.5rem}
+  .article-body,.article-body section,.article-body .codeblock{min-width:0;max-width:100%}
+  .article-toc{position:static;border:0;border-bottom:1px solid var(--line);padding:0 0 .8rem}
+  .article-toc nav{display:flex;gap:.4rem;overflow-x:auto}
+  .article-toc a{white-space:nowrap;padding:.45rem .65rem;border-radius:999px;background:var(--paper2)}
+}
+@media(max-width:520px){
+  .article-topline{align-items:flex-start}
+  .article-source{max-width:45%;text-align:right;line-height:1.5}
+  .article-meta{gap:.5rem .7rem}
+  .article-meta span+span::before{margin-right:.7rem}
+  .article-end{align-items:flex-start;flex-direction:column}
+  .article-related-head{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:760px){
+  .hero{padding-top:3.1rem}
+  .hero .hl{font-size:clamp(3rem,10vw,5.5rem)}
+  .hero-grid{grid-template-columns:1fr}
+  .atom-fig{width:100%;max-width:520px}
+  .hero .scale-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .scale-point{padding:.9rem}
+  .blog-featured{grid-template-columns:1fr}
+  .blog-feature-art{grid-row:1;min-height:220px}
+  .blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .usecase-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .workflow-head{display:block}
+  .workflow-head p{margin-top:1rem}
+}
+@media(max-width:520px){
+  .hero .hl{font-size:clamp(2.25rem,10.2vw,3.8rem)}
+  .hero .scale-grid{grid-template-columns:1fr}
+  .scale-point{min-height:unset}
+  .blog-grid{grid-template-columns:1fr}
+  .blog-list-head{display:block}
+  .blog-outro{align-items:flex-start;flex-direction:column}
+  .usecase-grid,.workflow-steps{grid-template-columns:1fr}
+  .usecase-card{min-height:210px}
+}
+.page-intro{padding:clamp(2.5rem,6vw,5rem) 0 2rem}
+.page-intro .eyebrow{margin-bottom:1rem}
+.page-intro h1{max-width:980px;margin:0 0 1rem;font-size:clamp(2.8rem,7vw,6rem);line-height:1;letter-spacing:-.075em}
+.page-intro>p:last-child{max-width:54rem;margin:0;color:var(--faint);font-size:clamp(1.05rem,1.7vw,1.3rem)}
+.page-content{padding:1rem 0 4rem}
+.page-section{padding:2.4rem 0;border-top:1px solid var(--line);scroll-margin-top:90px}
+.page-section h2{margin:.4rem 0 .8rem;font-size:clamp(1.8rem,3.5vw,2.7rem);letter-spacing:-.06em}
+.page-section>p{max-width:70ch;color:var(--faint)}
+.page-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-top:1.6rem}
+.page-card{padding:1.2rem;border:1px solid var(--line);border-radius:14px;background:var(--paper2)}
+.page-card .page-num{font:500 11px var(--mono);color:var(--accent)}
+.page-card h3{margin:.6rem 0 .3rem;font-size:1.15rem;letter-spacing:-.04em}
+.page-card p{margin:0;color:var(--faint);font-size:.9rem}
+.stepper{display:grid;grid-template-columns:220px minmax(0,1fr);gap:1.5rem;margin-top:1.8rem}
+.step-list{display:grid;gap:.4rem;align-content:start}
+.step-list button{display:flex;align-items:center;gap:.7rem;padding:.8rem;border:1px solid transparent;border-radius:9px;text-align:left;background:transparent;color:var(--faint);font:500 13px var(--sans);cursor:pointer}
+.step-list button[aria-current="step"]{border-color:var(--line);background:var(--paper2);color:var(--ink)}
+.step-list button span{font:500 11px var(--mono);color:var(--accent)}
+.step-content{min-width:0;padding:1.5rem;border:1px solid var(--line);border-radius:16px;background:var(--paper2)}
+.step-content h2{margin:.3rem 0 .5rem;font-size:1.7rem}
+.step-content p{color:var(--faint)}
+.step-content pre{overflow:auto;padding:1rem;border-radius:10px;background:#171421;color:#eee6ff;font:400 12px/1.7 var(--mono)}
+.step-controls{display:flex;justify-content:space-between;gap:1rem;margin-top:1rem}
+.step-controls button{padding:.65rem .9rem;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:500 12px var(--sans);cursor:pointer}
+.step-controls button:disabled{opacity:.45;cursor:not-allowed}
+.goal-list{display:grid;gap:.65rem;margin:1.4rem 0 0;padding:0;list-style:none}
+.goal-list li{padding:.8rem 1rem;border-left:3px solid var(--accent);border-radius:0 9px 9px 0;background:var(--paper2)}
+.page-cta{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;margin:2rem 0;padding:1.4rem;border:1px solid var(--line);border-radius:16px;background:var(--paper2)}
+.page-cta p{max-width:42rem;margin:0;color:var(--faint)}
+@media (max-width:960px){
+  .hero-grid{grid-template-columns:1fr}
+  .atomw svg{max-width:320px}
+  .pg-grid{grid-template-columns:1fr}
+  .editor{border-right:0;border-bottom:1px solid var(--line)}
+  .ed-scroll{height:340px}
+  .stage-view{min-height:260px}
+  .eco-row{grid-template-columns:1fr}
+  .eco-row.flip .eco-art{order:0}
+  .led-cols{grid-template-columns:1fr;padding-left:.25rem}
+  .ship-row{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr}
+}
+@media (max-width:1100px){
+  .hd-nav{display:none}
+  .menu-btn{display:inline-flex}
+}
+@media (max-width:720px){
+  .cmp-row{grid-template-columns:1fr auto;grid-template-areas:"name val" "mid mid"}
+  .led-k{display:none}
+  .led-head{grid-template-columns:2.4rem minmax(0,1fr) 1.6rem}
+  .brand-suf{display:none}
+  .cmp-name{font-size:12px}
+  .docs-layout{grid-template-columns:1fr;gap:1.5rem}
+  .resource-grid,.page-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .explore-grid{grid-template-columns:1fr}
+  .stepper{grid-template-columns:1fr}
+  .step-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .docs-sidebar{position:static;border-left:0;border-bottom:1px solid var(--line);padding:0 0 .7rem}
+  .docs-sidebar nav{display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.25rem}
+  .docs-sidebar a{white-space:nowrap;margin:0;border-left:0;border-bottom:2px solid transparent;padding:.5rem .6rem}
+  .docs-sidebar a:hover,.docs-sidebar a:focus-visible{border-left-color:transparent;border-bottom-color:var(--accent)}
+  .docs-install-cmd{align-items:flex-start}
+  .resource-grid,.page-card-grid{grid-template-columns:1fr}
+  .explore-head{display:block}
+  .explore-head p{margin-top:.5rem}
+  .step-list{grid-template-columns:1fr}
+  .docs-install-cmd code{min-width:0}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .ticker-row{animation:none}
+  html.js .reveal{transition:none;opacity:1;transform:none}
+  .scale-fill,.cmp-fill{transition:none}
+  .mmenu-nav a{animation:none;opacity:1}
+  .toast{animation:none}
+}
+/* ---------- complete site refresh ---------- */
+:root{
+  --paper:#fbfaff;--paper2:#f2effa;--ink:#201a2d;--faint:#625b70;
+  --line:rgba(47,33,71,.14);--accent:#673ab8;--acc-soft:rgba(103,58,184,.08);
+  --acc-on-ink:#c5adff;--serif:'Archivo','Helvetica Neue',sans-serif;
+  --sans:'Archivo','Helvetica Neue',sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.22,.61,.2,1)
+}
+[data-theme="dark"]{
+  --paper:#15121d;--paper2:#211a2d;--ink:#f5f0ff;--faint:#b7adc9;
+  --line:rgba(236,224,255,.16);--accent:#ae80ff;--acc-soft:rgba(174,128,255,.12);
+  --acc-on-ink:#e3d4ff;--str:#cfadff;--err:#ff9382
+}
+::view-transition-old(root){animation:none}
+::view-transition-new(root){animation:theme-wave 1.25s cubic-bezier(.22,.61,.36,1) both}
+@keyframes theme-wave{
+  from{clip-path:circle(0 at var(--theme-wave-x,50vw) var(--theme-wave-y,50vh))}
+  to{clip-path:circle(150vmax at var(--theme-wave-x,50vw) var(--theme-wave-y,50vh))}
+}
+@media(prefers-reduced-motion:reduce){
+  ::view-transition-new(root){animation:none}
+}
+[data-theme="dark"] ::selection{color:#171220}
+[data-theme="dark"] .btn.solid{color:#171220}
+html{scroll-padding-top:88px}
+body{font-family:var(--sans);font-size:16px;line-height:1.65}
+body::before{inset:12px;opacity:.35}
+body::after{opacity:.022}
+h1,h2,h3{font-family:var(--sans);letter-spacing:-.045em;font-weight:600}
+.wrap{max-width:1240px;padding-inline:clamp(1.25rem,5vw,4rem)}
+.hd{height:76px;padding-inline:clamp(1.25rem,5vw,4rem);gap:clamp(.75rem,2vw,1.8rem);background:color-mix(in srgb,var(--paper) 94%,transparent)}
+.brand{gap:.65rem}
+.brandmark svg{width:34px;height:34px}
+.brand-name{font:700 1.2rem var(--sans);letter-spacing:-.055em}
+.brand-suf{display:none}
+.hd-nav{gap:clamp(.6rem,1.4vw,1.3rem)}
+.hd-nav a{font:500 12px var(--sans);text-transform:capitalize;letter-spacing:.015em}
+.hd-actions{gap:.5rem}
+.gh-btn{font:600 12px var(--sans);padding:.55rem .8rem;border-radius:8px}
+.icon-btn{width:40px;height:40px;border-radius:9px}
+.btn{font:600 13px var(--sans);padding:.82rem 1.15rem;border-radius:9px}
+.chip{border-radius:999px}
+.hero{padding:clamp(3.6rem,8vw,7.5rem) 0 0}
+.eyebrow{font:600 11px var(--sans);letter-spacing:.13em;color:var(--accent)}
+.eyebrow::before{border-radius:50%;width:8px;height:8px}
+.hl{max-width:1000px;font:650 clamp(3.2rem,8.5vw,7.4rem)/.98 var(--sans);letter-spacing:-.075em;margin:1.15rem 0 .8rem}
+.hl-line{white-space:normal}
+.hl-line.it .hl-ch{font-style:normal;color:var(--accent)}
+.hl-ch{font-variation-settings:'wght' 650,'opsz' 144}
+.hl-note{font:400 12px var(--sans);color:var(--faint);margin-bottom:2rem}
+.hero-grid{grid-template-columns:minmax(0,1.05fr) minmax(330px,.95fr);gap:clamp(2rem,5vw,5rem);align-items:center}
+.hero-sub{font-size:clamp(1.1rem,1.7vw,1.35rem);line-height:1.6;max-width:40rem;letter-spacing:-.015em}
+.hero-proof{border-left:0;border-top:1px solid var(--line);padding:1rem 0 0;margin:0 0 1.1rem;max-width:40rem;color:var(--faint);font-size:1rem}
+.hero-meta{font-size:12px;gap:.45rem 1.1rem}
+.hero-ctas{align-items:center}
+.hero-ctas .chip{border-radius:8px;color:var(--accent)}
+.atom-fig{padding:1rem;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,var(--paper2),var(--paper))}
+.atomw svg{max-width:430px}
+.orbit ellipse{stroke-width:1.9}
+.hex{fill:var(--paper);stroke:var(--accent);stroke-width:3}
+.atom-p{fill:var(--accent);font-family:var(--sans);font-weight:700}
+.fig{font:500 10px var(--mono);letter-spacing:.08em}
+.scale{margin-top:clamp(3.5rem,7vw,6rem);padding:1.1rem 1.25rem;border:1px solid var(--line);border-radius:14px;background:var(--paper2)}
+.scale-labels{font-size:12px}
+.scale-track{height:10px;border:0;border-radius:99px;background:var(--line);overflow:hidden}
+.scale-fill{border-radius:99px}
+.scale.in .scale-fill{width:24%}
+.scale-mid{margin-left:0;font:400 12px var(--sans)}
+.scale-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:clamp(3rem,6vw,5rem) 0 0}
+.scale-point{display:grid;gap:.25rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:14px;background:var(--paper2)}
+.scale-point b{font-size:1.15rem;letter-spacing:-.035em}
+.scale-point span{font-size:.84rem;color:var(--faint)}
+.ticker{margin-top:2.8rem;border-block-color:var(--line)}
+.ticker-row{padding:1rem 0}
+.tk{font:600 11px var(--sans);letter-spacing:.1em}
+.sec{padding-top:clamp(5rem,9vw,8rem)}
+.sec-head{border-top:0;padding-top:0}
+.kicker{font:600 11px var(--sans);letter-spacing:.13em}
+.sec-title{font-size:clamp(2rem,4.5vw,3.5rem);line-height:1.08;letter-spacing:-.06em;margin:.6rem 0 .8rem}
+.sec-title em{font-style:normal;color:var(--accent)}
+.sec-sub{max-width:54rem;color:var(--faint);opacity:1;font-size:1.05rem}
+.led{margin-top:2rem;border-top:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.led-row{border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:.1rem 1.15rem}
+.led-head{grid-template-columns:2.2rem minmax(0,1fr) 2rem;gap:.7rem;padding:1.2rem .1rem}
+.led-title{font:600 1.12rem var(--sans);letter-spacing:-.035em}
+.led-k{grid-column:2;grid-row:2;font:400 12px var(--sans)}
+.led-x{grid-column:3;grid-row:1 / span 2}
+.led-cols{padding:.1rem .1rem 1.2rem;gap:1rem}
+.led-p{font-size:.92rem}
+.codeblock{border-radius:12px;background:var(--paper2)}
+.cb-head{font:500 10px var(--mono);letter-spacing:.08em}
+.codeblock pre{font-size:12px}
+.pg-tabs{margin:2rem 0 1rem}
+.pg-tab,.pg-run{border-radius:8px;padding:.6rem .85rem;font:500 12px var(--sans)}
+.pg-grid{border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 60px rgba(36,19,66,.08)}
+.editor{background:#171421;border-color:rgba(255,255,255,.1)}
+.ed-hl,.src{font-size:12px}
+.ed-hl{color:#e4d9ff}
+.ed-gut{color:#9487aa}
+.ed-bar,.stage-head{font:500 10px var(--mono)}
+.stage{background:var(--paper)}
+.stage-view{background:var(--paper2);border-radius:0 0 14px 0}
+.pg-root .pg-btn{border-radius:8px}
+.pg-root input:not([type]){border-radius:8px}
+.cmp{margin-top:2rem}
+.cmp-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.cmp-card{padding:1.2rem;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.cmp-card b{display:block;margin:.7rem 0 .3rem;font-size:1.05rem;letter-spacing:-.035em}
+.cmp-card p{margin:0;color:var(--faint);font-size:.9rem}
+.cmp-row{cursor:pointer;border-color:var(--line);border-radius:12px}
+.cmp-row:first-child{border-top:1px solid var(--line)}
+.cmp-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.eco-row{border-top-color:var(--line)}
+.eco-name{font:600 clamp(1.3rem,2vw,1.65rem) var(--sans);letter-spacing:-.04em}
+.eco-p{color:var(--faint);opacity:1}
+.sig,.term,.codeblock{border-radius:14px}
+.term{border-radius:12px}
+.sec-ship{padding-bottom:1rem}
+.ship-title{font:650 clamp(2.8rem,7vw,5.6rem)/.99 var(--sans);letter-spacing:-.075em}
+.ship-title em{font-style:normal}
+.foot{border-top:1px solid var(--line);margin-top:5rem;background:var(--paper2);padding:3.4rem 0 1.8rem}
+.foot-last{border-top-color:var(--line)}
+.foot-links a{font-family:var(--sans)}
+.docs-hero{padding:clamp(2.5rem,6vw,4.5rem) 0 2.5rem}
+.docs-title{font-size:clamp(2.6rem,6vw,5rem);letter-spacing:-.075em}
+.docs-lede{color:var(--faint)}
+.docs-sidebar a{border-radius:0 8px 8px 0}
+.docs-section h2{letter-spacing:-.05em}
+.docs-section p{color:var(--faint)}
+.docs-section code,.page-copy code{background:var(--paper2);border:1px solid var(--line);border-radius:4px;padding:.08rem .25rem}
+.docs-section .codeblock code{background:transparent;border:0;padding:0}
+.docs-note{border-radius:0 12px 12px 0}
+.docs-install button{border-radius:8px}
+.docs-install button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.docs-install-cmd{border-radius:10px}
+.docs-next a{border-radius:9px}
+.mmenu{padding:1.2rem clamp(1.25rem,5vw,2rem) 1.6rem}
+.mmenu-nav a{font:600 clamp(1.8rem,8vw,2.8rem) var(--sans);letter-spacing:-.055em}
+main[id]{scroll-margin-top:88px}
+.hero{position:relative;isolation:isolate;padding:clamp(2.4rem,5vw,4.2rem) 0 clamp(2.2rem,4vw,3.5rem);background:radial-gradient(ellipse at 78% 28%,rgba(192,163,255,.32),transparent 38%),linear-gradient(135deg,#f3efff 0%,var(--paper) 58%,#f8f4ff 100%);border-bottom:1px solid var(--line);overflow:hidden}
+[data-theme="dark"] .hero{background:radial-gradient(ellipse at 78% 28%,rgba(103,58,184,.32),transparent 38%),linear-gradient(135deg,#20182c 0%,var(--paper) 58%,#191421 100%)}
+.hero>.wrap{position:relative;z-index:1}
+.hero .eyebrow{display:inline-flex;align-items:center;gap:.55rem;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--paper) 75%,transparent);padding:.5rem .8rem}
+.hero .hl{max-width:1100px;font-size:clamp(3.6rem,7.4vw,7rem);line-height:.94;letter-spacing:-.085em;margin:1.15rem 0 .75rem}
+.hero .hl-line.it .hl-ch{color:var(--accent)}
+.hero .hl-note{font-size:clamp(1rem,1.5vw,1.15rem);margin:0 0 clamp(1.5rem,3vw,2.3rem);color:var(--faint)}
+.hero .hero-grid{grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);gap:clamp(2rem,6vw,6rem)}
+.hero-grid>div:first-child{max-width:620px}
+.hero .hero-sub{font-size:clamp(1.15rem,1.8vw,1.45rem);line-height:1.5}
+.hero .hero-proof{padding-top:1rem;font-size:1rem}
+.hero .hero-ctas .btn{min-height:48px}
+.hero .atom-fig{position:relative;padding:clamp(1rem,2vw,1.5rem);border-radius:28px;background:color-mix(in srgb,var(--paper) 78%,transparent);box-shadow:0 26px 70px rgba(53,31,94,.12)}
+.hero .atomw svg{max-width:390px}
+.hero .fig{font-size:10px;color:var(--faint)}
+.home-proof{padding-top:clamp(1.5rem,3vw,2.5rem);padding-bottom:1.5rem}
+.home-proof .scale-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:0}
+.home-proof .scale-point{min-height:96px;align-content:center;background:linear-gradient(145deg,var(--paper2),var(--paper))}
+.home-proof .scale-point b{font-size:1.2rem}
+.home-proof .ticker{margin-top:1.5rem;border-color:rgba(103,58,184,.24)}
+.explore{padding-top:clamp(3rem,6vw,5rem)}
+.explore-head h2{font-size:clamp(1.8rem,3.3vw,2.5rem)}
+.explore-card{min-height:235px;padding:1.5rem;background:linear-gradient(145deg,var(--paper2),var(--paper))}
+.explore-card b{font-size:1.28rem}
+.led-row,.cmp-card,.resource-card{box-shadow:0 10px 36px rgba(39,25,65,.035)}
+.blog-intro{padding-bottom:2.5rem;border-bottom:1px solid var(--line)}
+.blog-intro h1{max-width:900px}
+.blog-featured{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(280px,.95fr);min-height:310px;overflow:hidden;margin:2.4rem 0 4rem;border:1px solid var(--line);border-radius:24px;background:var(--paper2);text-decoration:none}
+.blog-feature-copy{display:flex;flex-direction:column;align-items:flex-start;padding:clamp(1.4rem,4vw,3rem)}
+.blog-feature-copy .resource-tag{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.blog-feature-copy h2{font-size:clamp(2rem,4vw,3.5rem);line-height:1.02;letter-spacing:-.065em;margin:1rem 0 .8rem}
+.blog-feature-copy p{max-width:44ch;margin:0;color:var(--faint)}
+.blog-feature-copy em{margin-top:auto;padding-top:1.7rem;color:var(--accent);font-size:.9rem;font-style:normal}
+.blog-feature-art{position:relative;display:grid;place-items:center;min-height:260px;overflow:hidden;background:linear-gradient(135deg,#31175e,#673ab8 55%,#9c70e5);color:white}
+.blog-feature-art::before,.blog-feature-art::after{content:"";position:absolute;border:1px solid rgba(255,255,255,.3);border-radius:50%;width:min(33vw,360px);aspect-ratio:1;transform:rotate(-28deg) scaleY(.48)}
+.blog-feature-art::after{transform:rotate(35deg) scaleY(.48)}
+.blog-feature-mark{position:relative;display:grid;place-items:center;width:150px;aspect-ratio:1;border:1px solid rgba(255,255,255,.55);border-radius:34px;background:rgba(255,255,255,.13);backdrop-filter:blur(8px);font-size:4.4rem;font-weight:700;letter-spacing:-.1em;box-shadow:0 24px 70px rgba(19,5,43,.25)}
+.blog-feature-mark span{position:absolute;right:-22px;top:-20px;border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:.4rem .6rem;background:#fff;color:#673ab8;font:500 10px var(--mono);letter-spacing:.08em}
+.blog-list-head{display:flex;align-items:end;justify-content:space-between;gap:1.5rem}
+.blog-list-head h2{margin:.4rem 0 .5rem;font-size:clamp(1.8rem,3.5vw,2.7rem);letter-spacing:-.06em}
+.blog-list-head p{margin:0;color:var(--faint)}
+.blog-filters{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0}
+.blog-filters button{border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--faint);padding:.55rem .8rem;font:500 11px var(--sans);cursor:pointer;transition:background .18s,color .18s,border-color .18s}
+.blog-filters button:hover,.blog-filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.blog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.blog-card{display:flex;flex-direction:column;min-height:220px;padding:1.4rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);text-decoration:none;transition:transform .2s var(--ease),border-color .2s,box-shadow .2s}
+.blog-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 18px 48px rgba(39,25,65,.1)}
+.blog-card b{margin:.85rem 0 .45rem;font-size:1.22rem;letter-spacing:-.045em}
+.blog-card p{margin:0;color:var(--faint);font-size:.92rem}
+.blog-card em{margin-top:auto;padding-top:1.25rem;color:var(--accent);font-size:.85rem;font-style:normal}
+.blog-outro{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;margin:3rem 0;padding:clamp(1.4rem,3vw,2.2rem);border-radius:18px;background:var(--paper2)}
+.blog-outro h2{margin:0 0 .35rem;font-size:1.4rem;letter-spacing:-.04em}
+.blog-outro p{margin:0;color:var(--faint);font-size:.92rem}
+.blog-outro .btn{flex:none}
+@media(max-width:1100px){
+  .hd-nav{display:none}
+  .menu-btn{display:inline-flex}
+  .hero .hero-grid{grid-template-columns:minmax(0,1fr) minmax(280px,.9fr)}
+}
+@media(max-width:760px){
+  .wrap{padding-inline:1.2rem}
+  .hd{height:68px;padding-inline:1rem;gap:.5rem}
+  .hd-nav + .hd-actions{margin-left:auto}
+  .gh-btn{padding:.5rem .6rem}
+  .hero{padding-top:3.1rem}
+  .hero .hl{font-size:clamp(3rem,10vw,5.5rem)}
+  .hero .hl-line{white-space:normal}
+  .hero .hero-grid{grid-template-columns:1fr}
+  .hero .atom-fig{width:100%;max-width:520px}
+  .home-proof .scale-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .hero .scale-point{padding:.9rem}
+  .blog-featured{grid-template-columns:1fr}
+  .blog-feature-art{grid-row:1;min-height:220px}
+  .blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .scale-grid{grid-template-columns:1fr}
+  .cmp-cards{grid-template-columns:1fr}
+  .atom-fig{max-width:520px;margin-inline:auto}
+  .scale-labels{align-items:flex-start;flex-wrap:wrap}
+  .scale-labels .sl-x{order:3;width:100%}
+  .led{grid-template-columns:1fr}
+  .led-cols{grid-template-columns:1fr}
+  .pg-grid{grid-template-columns:1fr}
+  .editor{border-right:0;border-bottom:1px solid var(--line)}
+  .stage-view{border-radius:0 0 14px 14px}
+  .eco-row{grid-template-columns:1fr}
+  .eco-row.flip .eco-art{order:0}
+  .led-k{display:block}
+  .ship-row{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr}
+  .docs-layout{grid-template-columns:1fr;gap:1.5rem}
+  .docs-sidebar{position:static;border-left:0;border-bottom:1px solid var(--line);padding:0 0 .7rem}
+  .docs-sidebar nav{display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.25rem}
+  .docs-sidebar a{white-space:nowrap;margin:0;border-left:0;border-bottom:2px solid transparent;padding:.5rem .6rem}
+}
+@media(max-width:430px){
+  .gh-btn .iconw{display:none}
+  .gh-btn{font-size:11px}
+  .hero-ctas .btn{width:100%;justify-content:center}
+  .hero-ctas .chip{margin:auto}
+  .pg-tabs{gap:.35rem}
+  .pg-tagline{order:3;flex-basis:100%;margin:0}
+  .ed-scroll{height:340px}
+  .stage-view{padding:1rem;min-height:250px}
+  .cmp-row{grid-template-columns:1fr auto;grid-template-areas:"name val" "mid mid"}
+  .docs-install-cmd{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:520px){
+  .hero .hl{font-size:clamp(2.25rem,10.2vw,3.8rem)}
+  .home-proof .scale-grid{grid-template-columns:1fr}
+  .hero .scale-point{min-height:unset}
+  .blog-grid{grid-template-columns:1fr}
+  .blog-list-head{display:block}
+  .blog-outro{align-items:flex-start;flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+  .ticker-row{animation:none}
+  .atomw svg{animation:none}
+  *{scroll-behavior:auto!important}
+}
+</style>
+<script>
+  /* theme before first paint + reveal gating */
+  document.documentElement.classList.add('js');
+  try {
+    var t = localStorage.getItem('pdc-theme');
+    if (!t) t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = t;
+  } catch (e) {}
+</script>
+</head>
+<body>
+<div id="app"><p class="fallback">this page renders itself with a component runtime embedded in its own source — it needs javascript, nothing else.</p></div>
+
+<script>
+(function () {
+'use strict';
+var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   1 · embedded component runtime — h / render / hooks / signals
+   the entire page (and the playground below) runs on this.
+   ============================================================ */
+var FRAG = { toString: function () { return 'Fragment'; } };
+
+function _flat(x, out) {
+  if (x == null || x === true || x === false) return;
+  if (Array.isArray(x)) { for (var i = 0; i < x.length; i++) _flat(x[i], out); return; }
+  out.push(typeof x === 'number' ? String(x) : x);
+}
+
+function h(type, props) {
+  var kids = [];
+  if (props == null || typeof props !== 'object' || Array.isArray(props) ||
+      ('t' in props && 'p' in props && 'c' in props)) {
+    if (props != null) _flat(props, kids);
+    props = {};
+  }
+  for (var i = 2; i < arguments.length; i++) _flat(arguments[i], kids);
+  if (typeof type === 'string' && type.indexOf('.') > -1) {
+    var parts = type.split('.');
+    var tag = parts[0] || 'div';
+    var cls = parts.slice(1).filter(Boolean).join(' ');
+    if (cls) { props = Object.assign({}, props); props.class = props.class ? props.class + ' ' + cls : cls; }
+    type = tag;
+  }
+  return { t: type, p: props, c: kids };
+}
+
+function _norm(v) {
+  if (v == null || v === true || v === false) return null;
+  if (typeof v === 'string' || typeof v === 'number') return { t: '#text', s: String(v) };
+  if (Array.isArray(v)) {
+    var out = [];
+    for (var i = 0; i < v.length; i++) { var n = _norm(v[i]); if (n) out.push(n); }
+    return { t: FRAG, p: {}, c: out };
+  }
+  return v;
+}
+
+var pendingFx = [], curInst = null, curHost = null;
+
+function firstDom(rec) {
+  while (rec) {
+    if (rec.k === 'e' || rec.k === 't') return rec.dom;
+    if (rec.k === 'c') { rec = rec.out; continue; }
+    if (rec.k === 'f') { if (!rec.kids.length) return null; rec = rec.kids[0]; continue; }
+    return null;
+  }
+  return null;
+}
+
+function destroyRec(rec) {
+  if (!rec) return;
+  var i, s;
+  if (rec.k === 'e') {
+    for (var ev in rec.evts) rec.dom.removeEventListener(ev, rec.evts[ev]);
+    if (rec.v && rec.v.p && typeof rec.v.p.ref === 'function') { try { rec.v.p.ref(null); } catch (e) {} }
+    for (i = 0; i < rec.kids.length; i++) destroyRec(rec.kids[i]);
+    if (rec.dom.parentNode) rec.dom.parentNode.removeChild(rec.dom);
+  } else if (rec.k === 't') {
+    if (rec.dom.parentNode) rec.dom.parentNode.removeChild(rec.dom);
+  } else if (rec.k === 'f') {
+    for (i = 0; i < rec.kids.length; i++) destroyRec(rec.kids[i]);
+  } else if (rec.k === 'c') {
+    var hs = rec.inst.hooks;
+    for (i = 0; i < hs.length; i++) { s = hs[i]; if (s && typeof s.clean === 'function') { try { s.clean(); } catch (e) {} } }
+    destroyRec(rec.out);
+  }
+}
+
+function _insert(parentDom, doms, refNode) {
+  for (var i = 0; i < doms.length; i++) {
+    if (refNode) parentDom.insertBefore(doms[i], refNode); else parentDom.appendChild(doms[i]);
+  }
+}
+
+function _props(rec, oldP, newP) {
+  var dom = rec.dom, name, val;
+  for (name in newP) {
+    val = newP[name];
+    if (name === 'children' || name === 'ref' || name === 'dangerouslySetInnerHTML' || name === 'key') continue;
+    if (oldP && oldP[name] === val) continue;
+    if (/^on[A-Z]/.test(name)) {
+      var ev = name.slice(2).toLowerCase();
+      if (rec.evts[ev]) dom.removeEventListener(ev, rec.evts[ev]);
+      if (typeof val === 'function') { dom.addEventListener(ev, val); rec.evts[ev] = val; }
+      else delete rec.evts[ev];
+      continue;
+    }
+    if (name === 'value') { if (dom.value !== val) dom.value = (val == null ? '' : val); continue; }
+    if (name === 'checked') { dom.checked = !!val; continue; }
+    if (name === 'style' && typeof val === 'string') { dom.style.cssText = val; continue; }
+    if (name === 'class' || name === 'className') { if (val) dom.setAttribute('class', val); else dom.removeAttribute('class'); continue; }
+    if (val === false || val == null) dom.removeAttribute(name);
+    else if (val === true) dom.setAttribute(name, '');
+    else dom.setAttribute(name, val);
+  }
+  if (oldP) for (name in oldP) {
+    if (name in newP) continue;
+    if (name === 'children' || name === 'ref' || name === 'dangerouslySetInnerHTML' || name === 'key') continue;
+    if (/^on[A-Z]/.test(name)) {
+      var e2 = name.slice(2).toLowerCase();
+      if (rec.evts[e2]) { dom.removeEventListener(e2, rec.evts[e2]); delete rec.evts[e2]; }
+      continue;
+    }
+    if (name === 'value') { dom.value = ''; continue; }
+    if (name === 'checked') { dom.checked = false; continue; }
+    if (name === 'style') { dom.style.cssText = ''; continue; }
+    if (name === 'class' || name === 'className') { dom.removeAttribute('class'); continue; }
+    dom.removeAttribute(name);
+  }
+}
+
+function _syncKids(parentDom, oldKids, vnodes) {
+  var recs = [], i, j;
+  for (i = 0; i < vnodes.length; i++) {
+    var v = _norm(vnodes[i]);
+    var old = oldKids[i] || null;
+    var ref = null;
+    for (j = i + 1; j < oldKids.length && !ref; j++) ref = firstDom(oldKids[j]);
+    recs[i] = patch(parentDom, old, v, ref);
+  }
+  for (; i < oldKids.length; i++) destroyRec(oldKids[i]);
+  return recs;
+}
+
+function patch(parentDom, rec, v, refNode) {
+  if (v == null) {
+    if (rec && rec.k !== 'n') destroyRec(rec);
+    return (rec && rec.k === 'n') ? rec : { k: 'n' };
+  }
+  if (v.t === '#text') {
+    if (rec && rec.k !== 't') { destroyRec(rec); rec = null; }
+    if (!rec) {
+      rec = { k: 't', s: v.s, dom: document.createTextNode(v.s) };
+      _insert(parentDom, [rec.dom], refNode);
+    } else if (rec.s !== v.s) { rec.s = v.s; rec.dom.data = v.s; }
+    return rec;
+  }
+  var kind = v.t === FRAG ? 'f' : (typeof v.t === 'function' ? 'c' : 'e');
+  if (kind === 'e' && rec && (rec.k !== 'e' || rec.v.t !== v.t)) { destroyRec(rec); rec = null; }
+  if (kind === 'c' && rec && (rec.k !== 'c' || rec.inst.fn !== v.t)) { destroyRec(rec); rec = null; }
+  if (kind === 'f' && rec && rec.k !== 'f') { destroyRec(rec); rec = null; }
+
+  if (kind === 'f') {
+    if (!rec) rec = { k: 'f', kids: [], v: v };
+    rec.kids = _syncKids(parentDom, rec.kids, v.c);
+    rec.v = v;
+    return rec;
+  }
+  if (kind === 'e') {
+    if (!rec) {
+      rec = { k: 'e', v: v, dom: document.createElement(v.t), kids: [], evts: {}, ih: null };
+      _props(rec, null, v.p);
+      _insert(parentDom, [rec.dom], refNode);
+      if (v.p.dangerouslySetInnerHTML) { rec.ih = v.p.dangerouslySetInnerHTML.__html; rec.dom.innerHTML = rec.ih; }
+      else rec.kids = _syncKids(rec.dom, rec.kids, v.c);
+      if (typeof v.p.ref === 'function') v.p.ref(rec.dom);
+    } else {
+      _props(rec, rec.v.p, v.p);
+      rec.v = v;
+      if (v.p.dangerouslySetInnerHTML) {
+        var ih = v.p.dangerouslySetInnerHTML.__html;
+        if (rec.ih !== ih) { rec.ih = ih; rec.dom.innerHTML = ih; }
+        rec.kids = [];
+      } else {
+        rec.kids = _syncKids(rec.dom, rec.kids, v.c);
+      }
+      if (typeof v.p.ref === 'function') v.p.ref(rec.dom);
+    }
+    if ('value' in v.p && v.p.value != null) { if (rec.dom.value !== v.p.value) rec.dom.value = v.p.value; }
+    return rec;
+  }
+  /* component */
+  if (!rec) rec = { k: 'c', v: v, inst: { fn: v.t, props: v.p, hooks: [], hi: 0, host: curHost, out: null } };
+  var inst = rec.inst;
+  inst.props = v.p;
+  inst.hi = 0;
+  inst.host = curHost || inst.host;
+  rec.v = v;
+  var prev = curInst; curInst = inst;
+  var out;
+  try { out = v.t(v.p); } finally { curInst = prev; }
+  rec.out = patch(parentDom, rec.out, _norm(out), refNode);
+  return rec;
+}
+
+/* roots & scheduling */
+var _roots = [], _flushQueued = false;
+function _schedule(host) {
+  if (_roots.indexOf(host) < 0) _roots.push(host);
+  if (!_flushQueued) { _flushQueued = true; Promise.resolve().then(_flush); }
+}
+function _flush() {
+  _flushQueued = false;
+  var list = _roots.slice(); _roots.length = 0;
+  for (var i = 0; i < list.length; i++) {
+    var host = list[i];
+    if (!host.__rec) continue;
+    curHost = host; pendingFx = [];
+    host.__rec = patch(host, host.__rec, host.__rootV, null);
+    _runFx();
+    curHost = null;
+  }
+}
+function _runFx() {
+  var list = pendingFx; pendingFx = [];
+  for (var i = 0; i < list.length; i++) {
+    try { list[i](); } catch (e) { setTimeout(function () { throw e; }, 0); }
+  }
+}
+function render(vnode, host) {
+  if (vnode == null) {
+    if (host.__rec) { destroyRec(host.__rec); host.__rec = null; }
+    while (host.firstChild) host.removeChild(host.firstChild);
+    return;
+  }
+  var first = !host.__rec;
+  var v = _norm(vnode);
+  host.__rootV = v;
+  if (first) { while (host.firstChild) host.removeChild(host.firstChild); }
+  curHost = host; pendingFx = [];
+  host.__rec = patch(host, host.__rec, v, null);
+  _runFx();
+  curHost = null;
+}
+
+/* hooks */
+function useState(init) {
+  var inst = curInst;
+  if (!inst) throw new Error('useState outside component');
+  var i = inst.hi++;
+  var slot = inst.hooks[i];
+  if (!slot) slot = inst.hooks[i] = { s: typeof init === 'function' ? init() : init };
+  var host = inst.host;
+  return [slot.s, function (v) {
+    var nv = typeof v === 'function' ? v(slot.s) : v;
+    if (nv === slot.s) return;
+    slot.s = nv;
+    _schedule(host);
+  }];
+}
+function useRef(init) {
+  var inst = curInst, i = inst.hi++;
+  var slot = inst.hooks[i];
+  if (!slot) slot = inst.hooks[i] = { current: init };
+  return slot;
+}
+function useMemo(fn, deps) {
+  var inst = curInst, i = inst.hi++;
+  var slot = inst.hooks[i];
+  if (!slot || !_eq(slot.d, deps)) slot = inst.hooks[i] = { d: deps, v: fn() };
+  return slot.v;
+}
+function useEffect(fn, deps) {
+  var inst = curInst, i = inst.hi++;
+  var slot = inst.hooks[i];
+  if (!slot) slot = inst.hooks[i] = { d: undefined, clean: null, fresh: true };
+  if (slot.fresh || (deps ? !_eq(slot.d, deps) : true)) {
+    slot.d = deps; slot.fresh = false;
+    (function (slot, fn) {
+      pendingFx.push(function () {
+        if (typeof slot.clean === 'function') { try { slot.clean(); } catch (e) {} slot.clean = null; }
+        slot.clean = fn();
+      });
+    })(slot, fn);
+  }
+}
+function _eq(a, b) {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+/* signals — small, eager, honest */
+var _curFx = null;
+function signal(v) {
+  var subs = new Set();
+  return {
+    get value() { if (_curFx) { subs.add(_curFx); _curFx.subs.push(subs); } return v; },
+    set value(nv) {
+      if (nv === v) return;
+      v = nv;
+      var l = Array.from(subs);
+      for (var i = 0; i < l.length; i++) l[i].run();
+    },
+    peek: function () { return v; }
+  };
+}
+function effect(fn) {
+  var e = {
+    subs: [], dead: false,
+    run: function () {
+      if (e.dead) return;
+      for (var i = 0; i < e.subs.length; i++) e.subs[i].delete(e);
+      e.subs = [];
+      var prev = _curFx; _curFx = e;
+      try { fn(); } finally { _curFx = prev; }
+    }
+  };
+  e.run();
+  return function () {
+    e.dead = true;
+    for (var i = 0; i < e.subs.length; i++) e.subs[i].delete(e);
+    e.subs = [];
+  };
+}
+function computed(fn) {
+  var val, subs = new Set();
+  effect(function () {
+    var nv = fn();
+    if (nv === val) return;
+    val = nv;
+    var l = Array.from(subs);
+    for (var i = 0; i < l.length; i++) l[i].run();
+  });
+  return { get value() { if (_curFx) { subs.add(_curFx); _curFx.subs.push(subs); } return val; } };
+}
+
+/* ============================================================
+   2 · small utilities — icons, syntax highlight, clipboard, toast
+   ============================================================ */
+var ICONS = {
+  github: '<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  play: '<path d="m6 3 14 9-14 9V3z"/>',
+  copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  ext: '<path d="M7 7h10v10M7 17 17 7"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  star: '<path fill="currentColor" stroke="none" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>'
+};
+function iconSvg(name, size) {
+  size = size || 18;
+  return '<svg class="icon" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>';
+}
+function Icon(props) {
+  return h('span.iconw', { dangerouslySetInnerHTML: { __html: iconSvg(props.name, props.size) } });
+}
+
+var TOK = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`(?:\\[\s\S]|[^`\\])*`|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*")|\b(const|let|var|function|return|if|else|for|of|in|new|typeof|instanceof|class|extends|import|from|export|default|switch|case|break|continue|do|while|try|catch|finally|throw|async|await|yield|delete|true|false|null|undefined)\b|(=>)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)(?=\s*\()/g;
+function highlight(src) {
+  var esc = function (s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  var out = '', last = 0, m;
+  TOK.lastIndex = 0;
+  while ((m = TOK.exec(src))) {
+    out += esc(src.slice(last, m.index));
+    var cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'k' : m[5] ? 'n' : 'f';
+    out += '<span class="tk-' + cls + '">' + esc(m[0]) + '</span>';
+    last = m.index + m[0].length;
+  }
+  return out + esc(src.slice(last));
+}
+
+var _toast = signal(null), _tid = 0;
+function notify(msg) { _toast.value = { msg: msg, id: ++_tid }; }
+function copyText(txt, msg) {
+  var done = function () { notify(msg || ('copied — ' + txt.slice(0, 40) + (txt.length > 40 ? '…' : ''))); };
+  var fallback = function () {
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done, fallback);
+  } else fallback();
+}
+
+/* ============================================================
+   3 · content
+   ============================================================ */
+var LOGO = '<svg width="26" height="26" viewBox="-256 -256 512 512" aria-hidden="true">'
+  + '<path class="bm-hex" d="M0,-256 221.7025033688164,-128 221.7025033688164,128 0,256 -221.7025033688164,128 -221.7025033688164,-128z"/>'
+  + '<ellipse class="bm-orb" cx="0" cy="0" rx="75" ry="196" stroke-dasharray="387 60" stroke-dashoffset="0" transform="rotate(52)"/>'
+  + '<ellipse class="bm-orb" cx="0" cy="0" rx="75" ry="196" stroke-dasharray="387 60" stroke-dashoffset="0" transform="rotate(-52)"/>'
+  + '<circle class="bm-e" cx="0" cy="0" r="34"/>'
+  + '</svg>';
+
+var ATOM_SVG = (function () {
+  var orbits = [0, 60, 120].map(function (rot) {
+    return '<g class="orbit" transform="rotate(' + rot + ')">'
+      + '<ellipse rx="104" ry="40"/>'
+      + '<g class="e"><circle r="5"/></g>'
+      + '</g>';
+  }).join('');
+  return '<svg class="atom" viewBox="-118 -118 236 236" aria-hidden="true">'
+    + '<g class="orbits">' + orbits + '</g>'
+    + '<g class="nucleus"><polygon class="hex" points="15,-26 30,0 15,26 -15,26 -30,0 -15,-26"/>'
+    + '<text class="atom-p" y="2">p</text></g>'
+    + '</svg>';
+})();
+
+var MENU = [
+  ['home', '#home'], ['guide', '#guide'], ['tutorial', '#tutorial'],
+  ['libraries', '#libraries'], ['project', '#project'], ['blog', '#blog']
+];
+
+var FACTS = ['small by design', 'modern components', 'hooks & context', 'preact/compat',
+  'signals', 'server rendering', 'readable source', 'open source', 'vite ready', 'web standards'];
+
+var WHY = [
+  {
+    t: 'The API you already know', k: 'muscle memory, transferred', file: 'counter.jsx',
+    p: 'Hooks, context, refs, lazy, suspense boundaries — the modern React surface, spelled identically. If you have been writing components since 2019, you already know Preact; only the download got smaller. Nothing to relearn, nothing to unlearn.',
+    code: `import { useState } from 'preact/hooks';
+
+function Counter() {
+  const [n, setN] = useState(0);
+  return <button onClick={() => setN(n + 1)}>{n}</button>;
+}`
+  },
+  {
+    t: 'Small is a strategy', k: 'a budget, not a slogan', file: 'bytes.txt',
+    p: 'Every framework byte arrives before your interface does. Preact treats its own weight as a project goal: keep the core focused, and give applications room for the things their users actually came for.',
+    code: `// a small starting point
+import { h, render } from 'preact';
+
+function App() {
+  return h('main', null, 'Hello, web.');
+}
+
+render(h(App), document.body);`
+  },
+  {
+    t: 'Source you can read', k: 'diffing, de-folklored', file: 'src/render.js',
+    p: 'The core is a few thousand lines of plain, commented TypeScript. An afternoon with the repo and the virtual DOM stops being folklore — you will have personally watched diff() reconcile a tree, and it will not even take long.',
+    code: `// src/render.js — the entry point
+export function render(vnode, parent) {
+  // ~60 lines. no codegen, no compiler,
+  // no folklore. readable on a coffee break.
+}`
+  },
+  {
+    t: 'The ecosystem stays', k: 'compat, two lines', file: 'bundler alias',
+    p: 'preact/compat is a thin alias over the core: point react and react-dom at it and the libraries you actually use — routers, charts, headless kits — keep running, unmodified. Most migrations are a config edit and a regression pass.',
+    code: `// vite.config.js — the whole migration
+export default {
+  resolve: {
+    alias: {
+      'react': 'preact/compat',
+      'react-dom': 'preact/compat',
+    },
+  },
+};`
+  }
+];
+
+/* playground presets — plain functions, no transpiler needed */
+var PRESETS = [
+  {
+    name: 'counter', tag: 'state & events',
+    code: `// a component is a plain function.
+// state is a plain hook. no build step.
+const Counter = ({ start = 0 }) => {
+  const [n, setN] = useState(start);
+  return h('button.pg-btn',
+    { onClick: () => setN(n + 1) },
+    'clicked ' + n + ' time' + (n === 1 ? '' : 's'));
+};
+
+render(h(Counter, { start: 0 }), view);
+`
+  },
+  {
+    name: 'todos', tag: 'lists, keys & forms',
+    code: `const Todos = () => {
+  const [items, setItems] = useState([
+    { text: 'keep the core focused', done: true },
+    { text: 'read the diffing source', done: false },
+    { text: 'rewrite this demo', done: false },
+  ]);
+  const [draft, setDraft] = useState('');
+
+  const add = e => {
+    e.preventDefault();
+    if (!draft.trim()) return;
+    setItems([{ text: draft.trim(), done: false }, ...items]);
+    setDraft('');
+  };
+
+  const toggle = t => setItems(
+    items.map(i => i.text === t ? { ...i, done: !i.done } : i)
+  );
+
+  const rows = items.map(i => h('li',
+    { class: i.done ? 'done' : '', onClick: () => toggle(i.text) },
+    h('span.x', i.done ? '×' : '·'),
+    i.text));
+
+  const open = items.filter(i => !i.done).length;
+
+  return h('div',
+    h('form', { onSubmit: add },
+      h('input', {
+        value: draft,
+        placeholder: 'something small…',
+        onInput: e => setDraft(e.target.value),
+      }),
+      h('button.pg-btn', 'add')),
+    h('ul', rows),
+    h('p.pg-meta', open + ' of ' + items.length + ' open — click a row'));
+};
+
+render(h(Todos), view);
+`
+  },
+  {
+    name: 'stopwatch', tag: 'effects & cleanup',
+    code: `const Stopwatch = () => {
+  const [ms, setMs] = useState(0);
+  const [running, setRunning] = useState(false);
+
+  // the interval lives only while running —
+  // the return value is the cleanup. delete it
+  // and watch the timer leak across edits.
+  useEffect(() => {
+    if (!running) return;
+    const t0 = performance.now() - ms;
+    const id = setInterval(() => setMs(performance.now() - t0), 33);
+    return () => clearInterval(id);
+  }, [running]);
+
+  const s = ms / 1000;
+  const fmt = String(Math.floor(s / 60)).padStart(2, '0')
+            + ':' + (s % 60).toFixed(2).padStart(5, '0');
+
+  return h('div',
+    h('div.pg-clock', fmt),
+    h('div.pg-row',
+      h('button.pg-btn',
+        { onClick: () => setRunning(!running) },
+        running ? 'stop' : 'start'),
+      h('button.pg-btn.ghost',
+        { onClick: () => setMs(0) }, 'reset')));
+};
+
+render(h(Stopwatch), view);
+`
+  },
+  {
+    name: 'signals', tag: 'reactive cells',
+    code: `// reactive values, in three moves:
+//   signal(init)  -> a cell you write to
+//   computed(fn)  -> a cell derived from cells
+//   effect(fn)    -> a subscriber that re-runs
+const celsius = signal(21);
+const fahren = computed(() => celsius.value * 9 / 5 + 32);
+
+const Temp = () => {
+  const [, force] = useState(0);
+
+  // re-render whenever celsius changes
+  useEffect(() =>
+    effect(() => { celsius.value; force(x => x + 1); }),
+    []);
+
+  return h('div.pg-row',
+    h('input', {
+      type: 'range', min: -20, max: 60,
+      value: celsius.value,
+      onInput: e => (celsius.value = +e.target.value),
+    }),
+    h('span.pg-out',
+      celsius.value + '°C = ' + Math.round(fahren.value) + '°F'));
+};
+
+render(h(Temp), view);
+`
+  }
+];
+
+/* ============================================================
+   4 · playground sandbox
+   ============================================================ */
+var _sbTimers = [], _sbDispose = [];
+function runPreset(src, host) {
+  /* unmount the previous tree so cleanups run, then
+     dispose tracked timers / signal effects as a backstop */
+  try { render(null, host); } catch (e) {}
+  _sbDispose.forEach(function (d) { try { d(); } catch (e) {} });
+  _sbDispose = [];
+  _sbTimers.forEach(function (id) { clearTimeout(id); clearInterval(id); });
+  _sbTimers = [];
+  var t0 = performance.now();
+  try {
+    var fn = new Function(
+      'h', 'Fragment', 'render', 'view', 'useState', 'useEffect', 'useRef', 'useMemo',
+      'signal', 'computed', 'effect', 'setInterval', 'setTimeout',
+      'clearInterval', 'clearTimeout', 'performance',
+      '"use strict";\n' + src
+    );
+    fn(
+      h, FRAG, render, host, useState, useEffect, useRef, useMemo,
+      signal, computed,
+      function (f) { var d = effect(f); _sbDispose.push(d); return d; },
+      function (f, ms) {
+        var a = [].slice.call(arguments, 2);
+        var id = setInterval(function () { f.apply(null, a); }, ms);
+        _sbTimers.push(id); return id;
+      },
+      function (f, ms) {
+        var a = [].slice.call(arguments, 2);
+        var id = setTimeout(function () { f.apply(null, a); }, ms);
+        _sbTimers.push(id); return id;
+      },
+      clearInterval, clearTimeout, performance
+    );
+    return { ms: Math.max(1, Math.round(performance.now() - t0)) };
+  } catch (err) {
+    var msg = String((err && err.message) || err);
+    if (/unsafe-eval|eval/i.test(msg)) msg += ' — this environment blocks eval; open the file directly in a browser';
+    return { err: msg };
+  }
+}
+
+/* ============================================================
+   5 · shared components
+   ============================================================ */
+function SecHead(props) {
+  return h('header.sec-head.reveal',
+    h('span.kicker', h('b.kn', props.n), h('span', ' · ' + props.k)),
+    h('h2.sec-title', props.title),
+    props.sub ? h('p.sec-sub', props.sub) : null);
+}
+
+function CodeBlock(props) {
+  var hi = useMemo(function () { return highlight(props.code); }, [props.code]);
+  return h('div.codeblock',
+    h('div.cb-head',
+      h('span', props.label || 'source'),
+      props.onCopy ? h('button.cb-copy',
+        { onClick: function () { props.onCopy(props.code); } },
+        h(Icon, { name: 'copy', size: 12 }), ' copy') : null),
+    h('pre', h('code', { dangerouslySetInnerHTML: { __html: hi } })));
+}
+
+function Terminal(props) {
+  return h('div.term',
+    h('div.term-head',
+      h('span.term-dot'),
+      h('span.term-title', props.label || 'sh — one command'),
+      props.onCopy ? h('button.term-copy',
+        { onClick: function () { props.onCopy(props.cmd); } },
+        h(Icon, { name: 'copy', size: 12 }), ' copy') : null),
+    h('div.term-body',
+      h('div', null, h('span.prompt', '$'), h('span', props.cmd)),
+      props.out ? h('div.term-out', props.out) : null));
+}
+
+function Receipt() {
+  var rows = [
+    ['alias react → preact/compat', '2 lines'],
+    ['components rewritten', '0'],
+    ['libraries still working', 'all of them'],
+    ['gzipped bytes recovered', '−40.5 kB'],
+    ['total owed', '$0.00']
+  ];
+  return h('ul.receipt', rows.map(function (r) {
+    return h('li', h('span', r[0]), h('b', r[1]));
+  }));
+}
+
+/* ---------- header ---------- */
+function Header(props) {
+  var os = useState(false), open = os[0], setOpen = os[1];
+  var ts = useState(document.documentElement.dataset.theme || 'light'), theme = ts[0], setTheme = ts[1];
+  var menuBtnRef = useRef(null);
+
+  useEffect(function () {
+    if (!open) return;
+    document.body.style.overflow = 'hidden';
+    var panel = document.querySelector('.mmenu');
+    var focusable = panel ? panel.querySelectorAll('a[href],button:not([disabled])') : [];
+    if (focusable.length) focusable[0].focus();
+    function onKeyDown(e) {
+      if (e.key === 'Escape') { setOpen(false); return; }
+      if (e.key !== 'Tab' || !focusable.length) return;
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return function () {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeyDown);
+      if (menuBtnRef.current) menuBtnRef.current.focus();
+    };
+  }, [open]);
+
+  useEffect(function () {
+    var hd = document.querySelector('.hd');
+    if (!hd) return;
+    var onScroll = function () { hd.classList.toggle('scr', window.scrollY > 8); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return function () { window.removeEventListener('scroll', onScroll); };
+  }, []);
+
+  function toggleTheme(event) {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    var root = document.documentElement;
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var updateTheme = function () {
+      root.dataset.theme = next;
+      try { localStorage.setItem('pdc-theme', next); } catch (e) {}
+      setTheme(next);
+    };
+
+    if (reducedMotion || typeof document.startViewTransition !== 'function') {
+      updateTheme();
+      return;
+    }
+
+    var rect = event.currentTarget.getBoundingClientRect();
+    root.style.setProperty('--theme-wave-x', (rect.left + rect.width / 2) + 'px');
+    root.style.setProperty('--theme-wave-y', (rect.top + rect.height / 2) + 'px');
+    document.startViewTransition(updateTheme);
+  }
+
+  return h(FRAG, null,
+    h('header.hd',
+      h('a.brand', { href: '#home', 'aria-label': 'Preact home' },
+        h('span.brandmark', { dangerouslySetInnerHTML: { __html: LOGO } }),
+        h('span.brand-name', 'preact'),
+        h('span.brand-suf', ' · redesign')),
+      h('nav.hd-nav', { 'aria-label': 'Main navigation' }, MENU.map(function (m) {
+        return h('a', {
+          href: m[1],
+          class: props.active === m[0] ? 'on' : '',
+          'aria-current': props.active === m[0] ? 'page' : null
+        }, m[0]);
+      })),
+      h('div.hd-actions',
+        h('a.gh-btn', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' },
+          h(Icon, { name: 'github', size: 14 }),
+          h('span.gh-stars', 'view source')),
+        h('button.icon-btn', { onClick: toggleTheme, 'aria-label': theme === 'dark' ? 'Use light theme' : 'Use dark theme', title: 'toggle theme' },
+          h(Icon, { name: theme === 'dark' ? 'sun' : 'moon', size: 16 })),
+        h('button.icon-btn.menu-btn', { ref: function (el) { menuBtnRef.current = el; }, onClick: function () { setOpen(true); }, 'aria-label': 'open menu', 'aria-expanded': open ? 'true' : 'false' },
+          h(Icon, { name: 'menu', size: 18 })))),
+    open ? h(MobileMenu, { close: function () { setOpen(false); } }) : null);
+}
+
+function MobileMenu(props) {
+  return h('div.mmenu', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Site navigation' },
+    h('div.mmenu-head',
+      h('span.mmenu-lab', 'navigation'),
+      h('button.icon-btn', { onClick: props.close, 'aria-label': 'close menu' },
+        h(Icon, { name: 'x', size: 18 }))),
+    h('nav.mmenu-nav', { 'aria-label': 'Main navigation' }, MENU.map(function (m) {
+      return h('a', { href: m[1], onClick: props.close }, m[0]);
+    })),
+    h('div.mmenu-foot',
+      h('a', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' }, 'github ↗'),
+      h('a', { href: 'https://preactjs.com/blog/website-redesign-competition/', target: '_blank', rel: 'noreferrer' }, 'the competition ↗')));
+}
+
+/* ---------- headline: type that carries real weight ---------- */
+function Headline(props) {
+  var ref = useRef(null);
+  useEffect(function () {
+    var root = ref.current;
+    if (!root) return;
+    var chars = [].slice.call(root.querySelectorAll('.hl-ch'));
+    var centers = [];
+    var measure = function () {
+      centers = chars.map(function (c) {
+        var r = c.getBoundingClientRect();
+        return r.left + r.width / 2;
+      });
+    };
+    measure();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    window.addEventListener('resize', measure);
+    var mx = null, visible = true, raf = 0;
+    var onMove = function (e) { mx = e.clientX; };
+    window.addEventListener('pointermove', onMove, { passive: true });
+    var io = new IntersectionObserver(function (es) { visible = es[0].isIntersecting; });
+    io.observe(root);
+    var st = chars.map(function () { return { w: 460 }; });
+    var t0 = performance.now();
+    var FAR = 440, NEAR = 880;
+    function tick(now) {
+      raf = requestAnimationFrame(tick);
+      if (!visible) return;
+      var t = (now - t0) / 1000;
+      for (var i = 0; i < chars.length; i++) {
+        var target;
+        if (REDUCED) target = 560;
+        else if (mx !== null) {
+          var d = Math.abs(mx - centers[i]);
+          target = NEAR - Math.min(d / 340, 1) * (NEAR - FAR);
+        } else {
+          target = 560 + Math.sin(t * 1.4 + i * 0.5) * 200; /* idle wave until a pointer shows up */
+        }
+        var s = st[i];
+        var nw = s.w + (target - s.w) * 0.16;
+        if (Math.abs(nw - s.w) > 0.15) {
+          s.w = nw;
+          chars[i].style.fontVariationSettings = "'wght' " + nw.toFixed(0) + ", 'opsz' 144";
+        }
+      }
+    }
+    if (REDUCED) {
+      chars.forEach(function (c) { c.style.fontVariationSettings = "'wght' 560, 'opsz' 144"; });
+    } else {
+      raf = requestAnimationFrame(tick);
+    }
+    return function () {
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
+  return h('h1.hl', { ref: function (el) { ref.current = el; }, 'aria-label': props.lines.join(' ') },
+    props.lines.map(function (l, li) {
+      return h('span.hl-line' + (li === 1 ? ' it' : ''), { 'aria-hidden': 'true' },
+        l.split(/(\s+)/).filter(Boolean).map(function (word) {
+          return /^\s+$/.test(word)
+            ? h('span.hl-space', word)
+            : h('span.hl-word', [].map.call(word, function (ch) {
+              return h('span.hl-ch', ch);
+            }));
+        }));
+    }));
+}
+
+/* ---------- atom: orbits bend toward your pointer ---------- */
+function AtomFigure() {
+  var ref = useRef(null);
+  useEffect(function () {
+    var host = ref.current;
+    if (!host) return;
+    var svg = host.querySelector('svg.atom');
+    if (!svg) return;
+    var orbitsG = svg.querySelector('.orbits');
+    var orbits = [].slice.call(svg.querySelectorAll('.orbit'));
+    var els = orbits.map(function (o) { return o.querySelector('.e'); });
+    var nucleus = svg.querySelector('.nucleus');
+    var theta = [0.4, 2.5, 4.6];
+    var speeds = [0.9, 1.25, 1.6];
+    var visible = false, raf = 0, px = null, k = 1;
+    var io = new IntersectionObserver(function (es) { visible = es[0].isIntersecting; });
+    io.observe(svg);
+    function place(i) {
+      var x = 104 * Math.cos(theta[i]), y = 40 * Math.sin(theta[i]);
+      els[i].setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')');
+    }
+    function onMove(e) {
+      var r = svg.getBoundingClientRect();
+      px = e.clientX - (r.left + r.width / 2);
+      k = 240 / r.width;
+    }
+    window.addEventListener('pointermove', onMove, { passive: true });
+    svg.addEventListener('pointerdown', function () {
+      nucleus.classList.remove('pulse');
+      void nucleus.getBoundingClientRect();
+      nucleus.classList.add('pulse');
+    });
+    var t0 = performance.now();
+    if (REDUCED) {
+      for (var i = 0; i < 3; i++) place(i);
+    } else {
+      (function tick(now) {
+        raf = requestAnimationFrame(tick);
+        if (!visible) return;
+        var dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
+        for (var i = 0; i < 3; i++) { theta[i] += speeds[i] * dt; place(i); }
+        var ang = px !== null ? Math.max(-14, Math.min(14, px * k * 0.09)) : Math.sin(now / 1600) * 6;
+        orbitsG.setAttribute('transform', 'rotate(' + ang.toFixed(2) + ')');
+      })(t0);
+    }
+    return function () {
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      window.removeEventListener('pointermove', onMove);
+    };
+  }, []);
+  return h('figure.atom-fig',
+    h('div.atomw', { ref: function (el) { ref.current = el; }, dangerouslySetInnerHTML: { __html: ATOM_SVG } }),
+    h('figcaption.fig', 'fig. 01 — the pointer bends the orbits; a click perks the nucleus'));
+}
+
+/* ---------- scale figure ---------- */
+function ScaleFigure() {
+  var points = [
+    ['~3.5 kB', 'lightweight core, gzip'],
+    ['Familiar API', 'components, hooks, context'],
+    ['Open source', 'MIT-licensed and community-built']
+  ];
+  return h('div.scale-grid.reveal', points.map(function (point) {
+    return h('div.scale-point',
+      h('b', point[0]),
+      h('span', point[1]));
+  }));
+}
+
+/* ---------- ticker ---------- */
+function Ticker() {
+  var items = [];
+  FACTS.concat(FACTS).forEach(function (f) {
+    items.push(h('span.tk', f));
+    items.push(h('span.tk-dot', '·'));
+  });
+  return h('div.ticker', { 'aria-hidden': 'true' }, h('div.ticker-row', items));
+}
+
+/* ---------- hero ---------- */
+function Hero() {
+  return h(FRAG, null,
+    h('section.hero',
+      h('div.wrap',
+        h('p.eyebrow.reveal', 'preact · a small foundation for ambitious interfaces'),
+        h(Headline, { lines: ['Small by design.', 'Ready for anything.'] }),
+        h('p.hl-note', 'The familiar component model, with less between your idea and the browser.'),
+        h('div.hero-grid',
+          h('div',
+            h('p.hero-sub.reveal',
+              'Build interfaces with components, hooks, and the patterns you already know. Preact keeps the core focused, so your app can start small and grow into the product you have in mind.'),
+            h('p.hero-proof.reveal',
+              'Add routing, signals, server rendering, or compatibility when your project calls for them. Keep the tools that help, skip the weight that does not, and stay close to the web platform.'),
+            h('p.hero-meta.reveal',
+              h('span', 'open source'), h('span', 'community built'), h('span', 'mit license')),
+            h('div.hero-ctas.reveal',
+              h('a.btn.solid', { href: '#docs' }, 'Start building ', h(Icon, { name: 'arrow', size: 14 })),
+              h('a.btn', { href: '#playground' }, 'Explore the playground'),
+              h('a.chip', { href: '#why' }, 'Why Preact? ', h(Icon, { name: 'arrow', size: 12 })))),
+          h(AtomFigure)))),
+    h('section.home-proof.wrap',
+      h(ScaleFigure),
+      h(Ticker)));
+}
+
+function HomeExplore() {
+  var items = [
+    ['START HERE', 'A guide from first install to production', 'Set up a project, understand the render cycle, and ship an app with the tools you already use.', '#guide', 'Read the guide'],
+    ['LEARN BY DOING', 'Make a tiny app, one step at a time', 'A hands-on path through components, state, events, and the patterns that make interfaces feel alive.', '#tutorial', 'Start the tutorial'],
+    ['BUILD YOUR WAY', 'A small core, a flexible toolkit', 'Add signals, routing, server rendering, testing, and integrations only when your project needs them.', '#libraries', 'Explore the ecosystem']
+  ];
+  return h('section.explore.wrap', { 'aria-labelledby': 'explore-title' },
+    h('div.explore-head',
+      h('h2', { id: 'explore-title' }, 'A good place to start.'),
+      h('p', 'Whether you are learning the basics or bringing an existing app along, pick the path that fits.')),
+    h('div.explore-grid', items.map(function (item) {
+      return h('a.explore-card', { href: item[3] },
+        h('span', item[0]),
+        h('b', item[1]),
+        h('p', item[2]),
+        h('em', item[4] + ' →'));
+    })));
+}
+
+function HomeUseCases() {
+  var cases = [
+    ['01', 'Product interfaces', 'Compose familiar components and hooks into forms, dashboards, navigation, and the everyday states users rely on.', '#tutorial', 'Build your first interface'],
+    ['02', 'Content-rich sites', 'Pair Preact with prerendering or server rendering when your pages benefit from HTML arriving ready to read.', '#libraries', 'Explore the toolset'],
+    ['03', 'Existing React apps', 'Evaluate preact/compat for a gradual migration path, then verify your actual dependencies and critical flows.', '#guide', 'Read the compatibility guide'],
+    ['04', 'Reactive experiences', 'Use Signals when a value needs to update the precise parts of an interface that depend on it.', '#libraries', 'See Signals and more']
+  ];
+  return h('section.sec.usecase-section', { 'aria-labelledby': 'usecase-title' },
+    h('div.wrap',
+      h('header.usecase-head.reveal',
+        h('span.kicker', 'A SMALL CORE, MANY WAYS TO BUILD'),
+        h('h2', { id: 'usecase-title' }, 'Make it yours. Make it useful.'),
+        h('p', 'Start with the shape of your project. Preact gives you a focused UI foundation, then leaves room to choose the tools and patterns that fit.')),
+      h('div.usecase-grid', cases.map(function (item) {
+        return h('a.usecase-card', { href: item[3] },
+          h('span.usecase-num', item[0]),
+          h('h3', item[1]),
+          h('p', item[2]),
+          h('em', item[4] + ' →'));
+      }))));
+}
+
+function HomeWorkflow() {
+  var steps = [
+    ['01 · GET SET', 'Choose a starting point', 'Use the guide to install Preact with your package manager, or pick a template for a ready-to-run project.', '#guide', 'Getting started'],
+    ['02 · COMPOSE', 'Build with components', 'Break the interface into small pieces. Add hooks where a component needs to remember state or respond to events.', '#tutorial', 'Follow the tutorial'],
+    ['03 · EXTEND', 'Add tools as you need them', 'Bring in routing, Signals, server rendering, or compatibility when they solve a real need in your app.', '#libraries', 'Browse libraries']
+  ];
+  return h('section.sec',
+    h('div.wrap',
+      h('div.workflow.reveal',
+        h('header.workflow-head',
+          h('div',
+            h('span.kicker', 'A PRACTICAL PATH'),
+            h('h2', 'From first render to the real thing.')),
+          h('p', 'You do not need to make every architecture decision up front. Start small, learn what the app asks for, and grow deliberately.')),
+        h('div.workflow-steps', steps.map(function (step) {
+          return h('article.workflow-step',
+            h('span', step[0]),
+            h('h3', step[1]),
+            h('p', step[2]),
+            h('a', { href: step[3] }, step[4] + ' →'));
+        })))));
+}
+
+function HomeFAQ() {
+  var questions = [
+    ['What is Preact?', 'Preact is a lightweight JavaScript library for building user interfaces with components. It offers a familiar API and is designed around a small, efficient core.'],
+    ['Can I use React libraries?', 'Many libraries work through preact/compat, a compatibility layer for React APIs. Check each library’s requirements and test your app as you migrate.'],
+    ['Do I need a build tool?', 'No. Preact can be used directly in a browser. For most modern applications, a tool such as Vite makes JSX, development, and production builds more comfortable.'],
+    ['Where should I start?', 'New to component-based UI? Try the tutorial. Already comfortable with React? Start with the getting-started guide and its compatibility section.'],
+    ['Can I adopt Preact gradually?', 'You can explore Preact in a small feature or route first. If you are migrating a React app, use the compatibility guide, check your dependencies, and test key flows before expanding the change.'],
+    ['What is Preact Signals?', 'Signals are a separate reactive state library in the Preact ecosystem. They can be useful when you want values to notify the specific parts of your UI that use them.']
+  ];
+  return h('section.sec', { id: 'faq' },
+    h('div.wrap',
+      h(SecHead, { n: '06', k: 'common questions', title: 'A few quick answers', sub: 'The short version before you dive in.' }),
+      h('div.faq-list', questions.map(function (q) {
+        return h('details.faq-item',
+          h('summary', q[0]),
+          h('p', q[1]));
+      }))));
+}
+
+function HomeReading() {
+  var posts = [
+    ['RELEASE', 'Preact 11', 'A look at the latest major release and the ideas shaping the next chapter.', 'https://preactjs.com/blog/preact-11'],
+    ['ARCHITECTURE', 'Build your own Island Components', 'Explore island architecture and learn how to put it together with familiar tools.', '#blog-islands'],
+    ['TOOLING', 'Prerendering with Preset Vite', 'How prerendering fits into the Preact and Vite ecosystem.', 'https://preactjs.com/blog/prerendering-preset-vite'],
+    ['REACTIVITY', 'Signal Boosting', 'Performance improvements and ideas behind the Signals reactive system.', 'https://preactjs.com/blog/signal-boosting'],
+    ['REACTIVITY', 'Introducing Signals', 'A different way to think about reactive state and fine-grained updates.', 'https://preactjs.com/blog/introducing-signals'],
+    ['PROJECT', 'Preact X, a story of stability', 'A look back at the release and ecosystem around Preact X.', 'https://preactjs.com/blog/preact-x']
+  ];
+  return h('section.sec',
+    h('div.wrap',
+      h(SecHead, { n: '05', k: 'from the community', title: 'Ideas worth exploring', sub: 'Release notes, practical guides, and stories from the Preact ecosystem.' }),
+      h('div.resource-grid', posts.map(function (post) {
+        var internal = post[3].charAt(0) === '#';
+        return h('a.resource-card', internal
+          ? { href: post[3] }
+          : { href: post[3], target: '_blank', rel: 'noreferrer' },
+          h('span.resource-tag', post[0]),
+          h('b', post[1]),
+          h('p', post[2]),
+          h('em', internal ? 'Read our island architecture guide →' : 'Read article ↗'));
+      })),
+      h('p', { class: 'page-copy', style: 'margin-top:1rem' },
+        h('a', { href: '#blog', style: 'color:var(--accent);text-underline-offset:3px' }, 'Browse the reading list →'))));
+}
+
+/* ---------- documentation route ---------- */
+function DocsPage() {
+  var is = useState('npm'), manager = is[0], setManager = is[1];
+  var commands = { npm: 'npm install preact', pnpm: 'pnpm add preact', yarn: 'yarn add preact' };
+  var introCode = `import { h, render } from 'preact';
+
+function App() {
+  return h('main', null, 'Hello, Preact!');
+}
+
+render(h(App), document.getElementById('app'));`;
+  var stateCode = `import { h } from 'preact';
+import { useState } from 'preact/hooks';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  return h('button', {
+    onClick: () => setCount(count + 1)
+  }, 'Clicked ' + count + ' times');
+}`;
+
+  return h('div.wrap',
+    h('header.docs-hero',
+      h('p.docs-crumb', h('a', { href: '#home' }, 'preact'), ' / guide'),
+      h('h1.docs-title', 'Build something small.'),
+      h('p.docs-lede',
+        'Preact is a fast, lightweight UI library with a familiar component API. This quick start gets you from an empty project to an interactive component, then points you toward the next steps.')),
+    h('div.docs-layout',
+      h('aside.docs-sidebar',
+        h('b', 'In this guide'),
+        h('nav', { 'aria-label': 'Documentation contents' },
+          h('a', { href: '#docs-install' }, 'Install Preact'),
+          h('a', { href: '#docs-start' }, 'Choose a setup'),
+          h('a', { href: '#docs-component' }, 'Your first component'),
+          h('a', { href: '#docs-render' }, 'Render a tree'),
+          h('a', { href: '#docs-state' }, 'Add interactivity'),
+          h('a', { href: '#docs-compat' }, 'React compatibility'),
+          h('a', { href: '#docs-next' }, 'Where to go next'))),
+      h('article.docs-content',
+        h('section.docs-section', { id: 'docs-install' },
+          h('h2', '1. Install Preact'),
+          h('p', 'Add Preact to an existing project with your package manager. If you are starting fresh, the Preact CLI and Vite templates can scaffold a ready-to-build app.'),
+          h('div.docs-install',
+            h('div.docs-install-tabs', { role: 'group', 'aria-label': 'Choose a package manager' },
+              ['npm', 'pnpm', 'yarn'].map(function (name) {
+                return h('button', {
+                  'aria-pressed': manager === name ? 'true' : 'false',
+                  onClick: function () { setManager(name); }
+                }, name);
+              })),
+            h('button.cb-copy', {
+              onClick: function () { copyText(commands[manager], commands[manager] + ' — copied'); }
+            }, h(Icon, { name: 'copy', size: 12 }), ' copy command')),
+          h('div.docs-install-cmd',
+            h('code', '$ ' + commands[manager]),
+            h('span', 'one small dependency'))),
+        h('section.docs-section', { id: 'docs-start' },
+          h('h2', 'Choose the setup that fits'),
+          h('p', 'There is no single required toolchain. The official guide covers three common ways to get started:'),
+          h('div.page-card-grid',
+            h('article.page-card',
+              h('span.page-num', 'RECOMMENDED'),
+              h('h3', 'Start with Vite'),
+              h('p', 'A quick development server and production build, with a Preact template and a small amount of setup.')),
+            h('article.page-card',
+              h('span.page-num', 'NO BUILD STEP'),
+              h('h3', 'Use browser modules'),
+              h('p', 'Import Preact as an ES module for a compact demo or a project that does not need a JSX transform.')),
+            h('article.page-card',
+              h('span.page-num', 'EXISTING APP'),
+              h('h3', 'Keep your pipeline'),
+              h('p', 'Bring Preact into a project that already uses tools such as Vite, Webpack, Rollup, or Parcel.'))),
+          h('div.docs-next',
+            h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'See official setup instructions ', h(Icon, { name: 'ext', size: 13 })))),
+        h('section.docs-section', { id: 'docs-component' },
+          h('h2', '2. Write a component'),
+          h('p', 'A Preact component is a JavaScript function that returns UI. Use JSX with your project’s usual build setup, or use ', h('code', 'h()'), ' directly when you want to keep the example build-free.'),
+          h(CodeBlock, {
+            code: introCode, label: 'src/main.js',
+            onCopy: function (c) { copyText(c, 'component — copied'); }
+          }),
+          h('div.docs-note', h('p',
+            h('b', 'Already use React? '),
+            'Preact supports a familiar API and offers ', h('code', 'preact/compat'), ' for many existing libraries. See the ',
+            h('a', { href: 'https://preactjs.com/guide/v11/getting-started#aliasing-react-to-preact', target: '_blank', rel: 'noreferrer' }, 'migration guide'), '.'))),
+        h('section.docs-section', { id: 'docs-render' },
+          h('h2', 'Render your component tree'),
+          h('p', 'Call ', h('code', 'render()'), ' with a component and a DOM node to mount your interface. Preact updates the rendered output when component state changes.'),
+          h(CodeBlock, {
+            code: `import { h, render } from 'preact';
+
+function App() {
+  return h('main', null,
+    h('h1', null, 'Hello, Preact'));
+}
+
+render(h(App), document.getElementById('app'));`,
+            label: 'render.js'
+          }),
+          h('p', 'If you prefer JSX, your build tool can transform it into calls to Preact. Or use HTM for JSX-like templates in standard JavaScript.')),
+        h('section.docs-section', { id: 'docs-state' },
+          h('h2', '3. Add interactivity'),
+          h('p', 'Hooks from ', h('code', 'preact/hooks'), ' let a component remember values and respond to events. State updates schedule the UI to render again.'),
+          h(CodeBlock, {
+            code: stateCode, label: 'src/counter.js',
+            onCopy: function (c) { copyText(c, 'counter — copied'); }
+          }),
+          h('h3', 'Keep state close to where it is used'),
+          h('p', 'Start with local component state. For shared or highly granular reactive state, explore ', h('a', { href: 'https://preactjs.com/guide/v11/signals', target: '_blank', rel: 'noreferrer' }, 'Preact Signals'), '.')),
+        h('section.docs-section', { id: 'docs-compat' },
+          h('h2', 'Bring a React project along'),
+          h('p', 'The ', h('code', 'preact/compat'), ' entry point provides compatibility for many React APIs and libraries. If you use the Preact Vite preset, Preact CLI, or WMR, the aliases are handled for you; other bundlers can be configured explicitly.'),
+          h('div.docs-note', h('p',
+            h('b', 'Check before you switch. '),
+            'Compatibility depends on the APIs and peer dependencies each library uses. Run your tests and validate key flows during migration.')),
+          h('div.docs-next',
+            h('a', { href: 'https://preactjs.com/guide/v11/getting-started#aliasing-react-to-preact', target: '_blank', rel: 'noreferrer' }, 'Read about aliasing React to Preact ', h(Icon, { name: 'ext', size: 13 })))),
+        h('section.docs-section', { id: 'docs-next' },
+          h('h2', 'Where to go next'),
+          h('p', 'The best next step is to build a small feature and keep the official guide close. Preact’s source is compact, the API is familiar, and the ecosystem is there when your project needs it.'),
+          h('div.docs-next',
+            h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'Read the official guide ', h(Icon, { name: 'ext', size: 13 })),
+            h('a', { href: '#playground' }, 'Explore the live playground ', h(Icon, { name: 'arrow', size: 13 })))))));
+}
+
+function TutorialPage() {
+  var ss = useState(0), step = ss[0], setStep = ss[1];
+  var steps = [
+    {
+      title: 'Set up the canvas',
+      text: 'Start with a project that can serve an HTML page. Add Preact with the package manager you use for the rest of your app.',
+      code: 'npm init preact\ncd my-preact-app\nnpm install\nnpm run dev'
+    },
+    {
+      title: 'Describe the interface',
+      text: 'A component is a function that returns a description of the UI. Keep it small, name it clearly, and compose it with other components.',
+      code: 'function Greeting() {\n  return <h1>Hello, small web.</h1>;\n}\n\nexport default Greeting;'
+    },
+    {
+      title: 'Give it state',
+      text: 'Use a hook when a component needs to remember something between renders. Updating state asks Preact to update the view.',
+      code: "import { useState } from 'preact/hooks';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <button onClick={() => setCount(count + 1)}>\n      Count: {count}\n    </button>\n  );\n}"
+    },
+    {
+      title: 'Make it yours',
+      text: 'Build a small feature, inspect it in your browser, and add only the tools you need. Preact works with routing, Signals, testing utilities, and more.',
+      code: 'function App() {\n  return (\n    <main>\n      <Greeting />\n      <Counter />\n    </main>\n  );\n}'
+    }
+  ];
+  return h('div.wrap',
+    h('header.page-intro',
+      h('p.eyebrow', 'LEARN BY DOING · 4 SHORT STEPS'),
+      h('h1', 'Your first little app.'),
+      h('p', 'A friendly first pass through Preact: create a project, make a component, add state, and leave with something you can keep building.')),
+    h('div.page-content',
+      h('section.page-section',
+        h('span.kicker', h('b.kn', '01'), h('span', ' · your path')),
+        h('h2', 'Four ideas. One working UI.'),
+        h('p', 'Choose a step to explore it. You can move at your own pace, revisit the code, and use the official guide when you are ready to go deeper.'),
+        h('div.stepper',
+          h('nav.step-list', { 'aria-label': 'Tutorial steps' }, steps.map(function (item, i) {
+            return h('button', {
+              'aria-current': step === i ? 'step' : null,
+              onClick: function () { setStep(i); }
+            }, h('span', String(i + 1).padStart(2, '0')), item.title);
+          })),
+          h('article.step-content', { 'aria-live': 'polite' },
+            h('span.kicker', 'STEP ' + String(step + 1).padStart(2, '0')),
+            h('h2', steps[step].title),
+            h('p', steps[step].text),
+            h('pre', h('code', steps[step].code)),
+            h('div.step-controls',
+              h('button', { disabled: step === 0 ? 'true' : null, onClick: function () { setStep(Math.max(0, step - 1)); } }, '← Previous'),
+              h('span', { class: 'mono', 'aria-live': 'polite' }, (step + 1) + ' / ' + steps.length),
+              h('button', { disabled: step === steps.length - 1 ? 'true' : null, onClick: function () { setStep(Math.min(steps.length - 1, step + 1)); } }, 'Next step →'))))),
+      h('section.page-section',
+        h('h2', 'Want the full picture?'),
+        h('p', 'The official getting-started guide covers project setup, rendering, JSX, and compatibility in more detail.'),
+        h('div.page-cta',
+          h('p', 'New to components? Keep going with our guide and explore how Preact fits into your real project.'),
+          h('a.btn.solid', { href: '#guide' }, 'Open the getting-started guide ', h(Icon, { name: 'arrow', size: 14 }))))));
+}
+
+function LibrariesPage() {
+  var groups = [
+    ['CORE', 'Preact', 'The component library at the center: render UI, respond to events, and compose small components into an app.', 'https://preactjs.com/guide/v11/getting-started'],
+    ['REACTIVITY', 'Signals', 'Fine-grained reactive state for values and derived data, available as a separate package.', 'https://preactjs.com/guide/v11/signals'],
+    ['COMPATIBILITY', 'preact/compat', 'A compatibility layer for many React APIs, useful when moving a project or using existing libraries.', 'https://preactjs.com/guide/v11/getting-started#aliasing-react-to-preact'],
+    ['TOOLING', 'Vite integration', 'Use the Preact preset with Vite for a fast development server, JSX transforms, and production builds.', 'https://github.com/preactjs/preset-vite'],
+    ['TEMPLATES', 'HTM', 'Write component templates with tagged template literals when you want to avoid a JSX transform.', 'https://github.com/developit/htm'],
+    ['DEBUGGING', 'Devtools', 'Inspect component trees and understand what your application is rendering.', 'https://github.com/preactjs/preact-devtools']
+  ];
+  return h('div.wrap',
+    h('header.page-intro',
+      h('p.eyebrow', 'PICK THE PIECES YOU NEED'),
+      h('h1', 'A small core. A useful neighborhood.'),
+      h('p', 'Start with Preact, then add the integrations that make sense for your app. The ecosystem is there to help without asking every project to ship every tool.')),
+    h('div.page-content',
+      h('section.page-section',
+        h('span.kicker', h('b.kn', '01'), h('span', ' · the toolkit')),
+        h('h2', 'A toolkit, not a checklist.'),
+        h('p', 'These are a few well-known parts of the Preact world. Each solves a different problem; you can adopt them independently.'),
+        h('div.resource-grid', groups.map(function (item) {
+          return h('a.resource-card', { href: item[3], target: '_blank', rel: 'noreferrer' },
+            h('span.resource-tag', item[0]),
+            h('b', item[1]),
+            h('p', item[2]),
+            h('em', 'Explore resource ↗'));
+        }))),
+      h('section.page-section',
+        h('h2', 'Bring what you already know.'),
+        h('p', 'Many libraries designed for React can work through preact/compat. Compatibility is broad, not absolute: check peer dependencies, test integrations, and follow the official migration guide.'),
+        h('div.page-cta',
+          h('p', 'See the supported migration approach and alias configuration in the guide.'),
+          h('a.btn.solid', { href: 'https://preactjs.com/guide/v11/getting-started#aliasing-react-to-preact', target: '_blank', rel: 'noreferrer' }, 'Read the compat guide ', h(Icon, { name: 'ext', size: 14 }))))));
+}
+
+function ProjectPage() {
+  var goals = [
+    ['01', 'Performance', 'Render quickly and efficiently with a straightforward, predictable update model.'],
+    ['02', 'Size', 'Keep the core lightweight — the project describes its size goal as approximately 3.5 kB gzipped.'],
+    ['03', 'Efficiency', 'Use memory effectively and avoid unnecessary work as interfaces update.'],
+    ['04', 'Understandability', 'Keep the codebase approachable enough that curious developers can learn how it works.'],
+    ['05', 'Compatibility', 'Stay largely compatible with React’s API, with preact/compat helping bridge existing libraries.']
+  ];
+  return h('div.wrap',
+    h('header.page-intro',
+      h('p.eyebrow', 'PROJECT GOALS'),
+      h('h1', 'Small by choice. Clear by design.'),
+      h('p', 'Preact is guided by a handful of focused goals. They shape what belongs in the core, how the library behaves, and how much complexity it asks of the people using it.')),
+    h('div.page-content',
+      h('section.page-section',
+        h('span.kicker', h('b.kn', '01'), h('span', ' · what matters')),
+        h('h2', 'A few principles. A practical library.'),
+        h('p', 'The official project goals make trade-offs explicit: a compact, efficient runtime that remains understandable and familiar.'),
+        h('div.page-card-grid', goals.map(function (goal) {
+          return h('article.page-card',
+            h('span.page-num', goal[0]),
+            h('h3', goal[1]),
+            h('p', goal[2]));
+        }))),
+      h('section.page-section',
+        h('h2', 'A clear scope is a feature.'),
+        h('p', 'Preact does not try to reproduce every React feature. Some APIs are intentionally left to the platform or separate libraries so the core can stay focused. Check the official differences guide when porting code or choosing a library.'),
+        h('div.page-cta',
+          h('p', 'Want to see the trade-offs in detail? Read the maintained guide and explore the source.'),
+          h('a.btn.solid', { href: 'https://preactjs.com/guide/v11/differences-to-react', target: '_blank', rel: 'noreferrer' }, 'Differences to React ', h(Icon, { name: 'ext', size: 14 }))))));
+}
+
+function BlogPage() {
+  var fs = useState('ALL'), filter = fs[0], setFilter = fs[1];
+  var posts = [
+    ['RELEASE', 'Preact 11', 'An incremental step forward, with updates to hydration, refs, and hook equality behavior.', 'https://preactjs.com/blog/preact-11'],
+    ['ARCHITECTURE', 'Build your own Island Components', 'A practical look at island architecture, using tools you already know.', '#blog-islands'],
+    ['TOOLING', 'Prerendering with Preset Vite', 'How prerendering fits into the Preact and Vite ecosystem.', 'https://preactjs.com/blog/prerendering-preset-vite'],
+    ['REACTIVITY', 'Signal Boosting', 'Performance improvements and ideas behind the Signals reactive system.', 'https://preactjs.com/blog/signal-boosting'],
+    ['REACTIVITY', 'Introducing Signals', 'Meet reactive values that notify the UI when the values it uses change.', 'https://preactjs.com/blog/introducing-signals'],
+    ['PROJECT', 'Preact X, a story of stability', 'A look back at the release and ecosystem around Preact X.', 'https://preactjs.com/blog/preact-x']
+  ];
+  var topics = ['ALL', 'RELEASE', 'ARCHITECTURE', 'TOOLING', 'REACTIVITY', 'PROJECT'];
+  var visiblePosts = filter === 'ALL' ? posts : posts.filter(function (post) { return post[0] === filter; });
+  return h('div.wrap',
+    h('header.page-intro.blog-intro',
+      h('p.eyebrow', 'NOTES FROM THE PROJECT'),
+      h('h1', 'Stories from the small web.'),
+      h('p', 'A reading room for the ideas behind Preact: thoughtful releases, practical architecture, and the tools that make a small core useful. Follow a story to its full article on preactjs.com.')),
+    h('div.page-content',
+      h('a.blog-featured', { href: 'https://preactjs.com/blog/preact-11', target: '_blank', rel: 'noreferrer' },
+        h('div.blog-feature-copy',
+          h('span.resource-tag', 'FEATURED · RELEASE'),
+          h('h2', 'Preact 11: an incremental step forward'),
+          h('p', 'A closer look at the release, from hydration improvements to refinements in refs and hook equality.'),
+          h('em', 'Read the release story ↗')),
+        h('div.blog-feature-art', { 'aria-hidden': 'true' },
+          h('div.blog-feature-mark', '11', h('span', 'PREACT')))),
+      h('section.blog-list', { 'aria-labelledby': 'blog-list-title' },
+        h('div.blog-list-head',
+          h('div',
+            h('span.kicker', h('b.kn', '01'), h('span', ' · the reading list')),
+            h('h2', { id: 'blog-list-title' }, 'Explore the journal'),
+            h('p', 'Practical notes and ideas from around the Preact project.'))),
+        h('div.blog-filters', { role: 'group', 'aria-label': 'Filter articles by topic' },
+          topics.map(function (topic) {
+            return h('button', {
+              type: 'button',
+              'aria-pressed': filter === topic ? 'true' : 'false',
+              onClick: function () { setFilter(topic); }
+            }, topic === 'ALL' ? 'All stories' : topic.charAt(0) + topic.slice(1).toLowerCase());
+          })),
+        h('div.blog-grid', visiblePosts.map(function (post) {
+          var internal = post[3].charAt(0) === '#';
+          return h('a.blog-card', internal
+            ? { href: post[3] }
+            : { href: post[3], target: '_blank', rel: 'noreferrer' },
+            h('span.resource-tag', post[0]),
+            h('b', post[1]),
+            h('p', post[2]),
+            h('em', internal ? 'Read the illustrated guide →' : 'Read article ↗'));
+        }))),
+      h('aside.blog-outro',
+        h('div',
+          h('h2', 'New to Preact? Start with the essentials.'),
+          h('p', 'Get a working setup, meet components and state, and choose your next step.')),
+        h('a.btn.solid', { href: '#guide' }, 'Open the getting started guide ', h(Icon, { name: 'arrow', size: 14 })))));
+}
+
+function IslandCounter() {
+  var cs = useState(0), count = cs[0], setCount = cs[1];
+  return h('button.island-widget', {
+    type: 'button',
+    onClick: function () { setCount(count + 1); },
+    'aria-label': 'Interactive island demo, clicked ' + count + ' times'
+  }, h('span', 'Interactive island'), h('b', String(count)));
+}
+
+function IslandArticlePage() {
+  var serverCode = `import { h } from 'preact';
+import renderToString from 'preact-render-to-string';
+
+const html = renderToString(h(Page));
+response.send(html);`;
+  var hydrateCode = `import { h, hydrate } from 'preact';
+import Counter from './Counter.js';
+
+const target = document.querySelector('#counter');
+if (target) hydrate(h(Counter), target);`;
+  var manifestCode = `const entryFiles = Object.values(manifest);
+const scriptTags = entryFiles.map(createScriptTag);
+
+return documentFor({ body, scriptTags });`;
+  return h('div.article-wrap',
+    h('div.article-topline',
+      h('a.article-back', { href: '#blog' }, h(Icon, { name: 'arrow', size: 13 }), ' Journal'),
+      h('a.article-source', {
+        href: 'https://preactjs.com/blog/simplifying-islands-arch/',
+        target: '_blank', rel: 'noreferrer'
+      }, 'Read the original on preactjs.com ↗')),
+    h('header.article-hero',
+      h('p.eyebrow', 'FIELD NOTES · ARCHITECTURE'),
+      h('h1.article-title', 'Build your own Island Components'),
+      h('p.article-deck', 'A practical, tool-agnostic walkthrough of server-rendered pages with small, deliberately interactive Preact islands.'),
+      h('div.article-meta',
+        h('span', 'Architecture'),
+        h('span', '8 minute read'),
+        h('span', 'Preact + server rendering'))),
+    h('figure.island-visual',
+      h('div.island-stage',
+        h('span.island-stage-label', '01 · server response'),
+        h('div.island-page',
+          h('span'), h('span'), h('span'), h('span'),
+          h('span.island-static'))),
+      h('span.island-arrow', '→'),
+      h('div.island-stage.island-static-stage',
+        h('span.island-stage-label', '02 · HTML arrives first'),
+        h('div.island-page',
+          h('span'), h('span'), h('span'),
+          h(IslandCounter),
+          h('span.island-static'))),
+      h('span.island-arrow', '→'),
+      h('div.island-stage',
+        h('span.island-stage-label', '03 · hydrate what you need'),
+        h('div.island-page',
+          h('span'), h('span'),
+          h(IslandCounter),
+          h('span'), h('span.island-static'))),
+      h('figcaption.island-caption', 'The document can be useful before JavaScript runs; hydration connects behavior only where the page needs it. Try either counter.')),
+    h('div.article-layout',
+      h('aside.article-toc',
+        h('b', 'In this article'),
+        h('nav', { 'aria-label': 'Article contents' },
+          h('a', { href: '#islands-intro' }, 'The idea'),
+          h('a', { href: '#islands-server' }, 'Render the page'),
+          h('a', { href: '#islands-hydrate' }, 'Hydrate an island'),
+          h('a', { href: '#islands-assets' }, 'Load the right assets'),
+          h('a', { href: '#islands-checklist' }, 'Put it together'))),
+      h('article.article-body',
+        h('section', { id: 'islands-intro' },
+          h('h2', 'A page can be mostly HTML—and still feel alive.'),
+          h('p', 'Island architecture is a way to serve a page whose content is rendered up front, then add client-side behavior to selected regions. The page shell and most of its content can remain ordinary HTML; a counter, menu, or search box can become an interactive Preact component when its code loads.'),
+          h('p', 'The original walkthrough explores this pattern using familiar server-rendering and bundling tools. The useful idea is not a particular framework configuration: render a page on the server, identify the places that need behavior, and hydrate those components on the client.'),
+          h('div.article-callout',
+            h('p', h('b', 'Think selective, not automatic. '), 'An island is a boundary around client behavior. Keep static content static; make a region interactive only when the experience calls for it.'))),
+        h('section', { id: 'islands-server' },
+          h('h2', '1. Render a useful page on the server.'),
+          h('p', 'Build your page from regular Preact components, then turn the component tree into HTML with a server-rendering package. Send that markup as the response so content can be read before the client bundle initializes.'),
+          h(CodeBlock, { code: serverCode, label: 'server response · illustrative' }),
+          h('p', 'A full application will also need to handle requests, errors, styles, and safe data serialization. Keep those concerns in your server framework; the rendering step is just one part of the request.')),
+        h('section', { id: 'islands-hydrate' },
+          h('h2', '2. Hydrate the components that need behavior.'),
+          h('p', 'On the client, find a server-rendered island and call Preact’s ', h('code', 'hydrate()'), ' with the matching component. Hydration attaches event handling to existing markup rather than treating the server output as a blank container.'),
+          h(CodeBlock, { code: hydrateCode, label: 'client entry · illustrative' }),
+          h('p', 'Keep the server and client render in sync. If an island needs initial data, pass serializable props through a safe boundary, and make sure the client renders the same initial state as the HTML.')),
+        h('section', { id: 'islands-assets' },
+          h('h2', '3. Load the small set of assets you actually built.'),
+          h('p', 'Production bundles often include hashed filenames. A build manifest maps stable entry names to the files that were emitted, letting a server template add the right client scripts without guessing the final path.'),
+          h(CodeBlock, { code: manifestCode, label: 'manifest lookup · illustrative' }),
+          h('div.article-callout',
+            h('p', h('b', 'A production detail worth keeping. '), 'Use your bundler and server framework’s supported manifest and HTML helpers. The short example above is a sketch of the relationship, not a drop-in HTML serializer.'))),
+        h('section', { id: 'islands-checklist' },
+          h('h2', 'A small checklist before shipping.'),
+          h('p', 'The architecture stays approachable when each island has a clear job and the server/client boundary is explicit.'),
+          h('ul.article-checklist',
+            h('li', h('b', 'Render meaningful HTML first.'), ' The page should not depend on JavaScript just to reveal its essential content.'),
+            h('li', h('b', 'Hydrate intentionally.'), ' Mount only the interactive regions this page uses.'),
+            h('li', h('b', 'Share serializable props.'), ' Treat server-to-client data as a deliberate interface.'),
+            h('li', h('b', 'Test both states.'), ' Check the server response before scripts run, then test interaction after hydration.')),
+          h('p', 'That is the central trade-off: server rendering makes the initial document useful, while focused client code adds interaction where it matters. Keep the architecture as simple as your page allows.'),
+          h('div.article-end',
+            h('a.article-back', { href: '#blog' }, '← Back to all stories'),
+            h('a', { href: 'https://preactjs.com/blog/simplifying-islands-arch/', target: '_blank', rel: 'noreferrer' }, 'Read the full original article ↗'))))),
+    h('section.article-related',
+      h('div.article-related-head',
+        h('div',
+          h('span.kicker', 'KEEP EXPLORING'),
+          h('h2', 'More from the Preact journal')),
+        h('a', { href: '#blog' }, 'View all stories →')),
+      h('div.blog-grid',
+        h('a.blog-card', { href: 'https://preactjs.com/blog/prerendering-preset-vite', target: '_blank', rel: 'noreferrer' },
+          h('span.resource-tag', 'TOOLING'),
+          h('b', 'Prerendering with Preset Vite'),
+          h('p', 'See how prerendering fits into the Preact and Vite ecosystem.'),
+          h('em', 'Read article ↗')),
+        h('a.blog-card', { href: 'https://preactjs.com/blog/introducing-signals', target: '_blank', rel: 'noreferrer' },
+          h('span.resource-tag', 'REACTIVITY'),
+          h('b', 'Introducing Signals'),
+          h('p', 'Explore reactive values for fine-grained updates.'),
+          h('em', 'Read article ↗')))));
+}
+
+/* ---------- why: the ledger ---------- */
+function Why() {
+  var os = useState(-1), open = os[0], setOpen = os[1];
+  return h('section.sec', { id: 'why' },
+    h('div.wrap',
+      h(SecHead, {
+        n: '01', k: 'the pitch',
+        title: h(FRAG, null, 'Four reasons the ', h('em', 'small web'), ' wins'),
+        sub: 'One ledger, four entries. Expand a line, read the argument, copy the code — it is all yours.'
+      }),
+      h('div.led',
+        WHY.map(function (w, i) {
+          var isOpen = open === i;
+          return h('div.led-row' + (isOpen ? ' open' : ''),
+            h('button.led-head', {
+              onClick: function () { setOpen(isOpen ? -1 : i); },
+              'aria-expanded': isOpen ? 'true' : 'false',
+              'aria-controls': 'why-detail-' + i
+            },
+              h('span.led-idx', String(i + 1).padStart(2, '0')),
+              h('span.led-title', w.t),
+              h('span.led-k', w.k),
+              h('span.led-x' + (isOpen ? ' rot' : ''), h(Icon, { name: 'plus', size: 16 }))),
+            h('div.led-body', { id: 'why-detail-' + i, 'aria-hidden': isOpen ? 'false' : 'true' },
+              h('div.led-inner',
+                h('div.led-cols',
+                  h('p.led-p', w.p),
+                  h(CodeBlock, {
+                    code: w.code, label: w.file,
+                    onCopy: function (c) { copyText(c, w.file + ' — copied'); }
+                  })))));
+        }))));
+}
+
+/* ---------- playground ---------- */
+function Playground() {
+  var ps = useState(0), presetIdx = ps[0], setPresetIdx = ps[1];
+  var cs = useState(PRESETS[0].code), code = cs[0], setCode = cs[1];
+  var ss = useState(null), status = ss[0], setStatus = ss[1];
+  var viewRef = useRef(null), taRef = useRef(null), ovRef = useRef(null), gutRef = useRef(null);
+
+  useEffect(function () {
+    run(PRESETS[0].code);
+  }, []);
+
+  function run(src) {
+    var res = runPreset(src, viewRef.current);
+    setStatus(res);
+  }
+
+  var lines = code.split('\n').length;
+  var hi = useMemo(function () { return highlight(code) + '\n'; }, [code]);
+
+  function onInput(e) { setCode(e.target.value); setStatus({ dirty: true }); }
+  function onKeyDown(e) {
+    var ta = e.target;
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end');
+      setCode(ta.value); setStatus({ dirty: true });
+    } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      run(ta.value);
+    }
+  }
+  function onScroll(e) {
+    if (ovRef.current) {
+      ovRef.current.scrollTop = e.target.scrollTop;
+      ovRef.current.scrollLeft = e.target.scrollLeft;
+    }
+    if (gutRef.current) gutRef.current.scrollTop = e.target.scrollTop;
+  }
+
+  var stTxt = !status ? 'ready'
+    : status.err ? '✗ ' + status.err
+    : status.dirty ? 'edited — ⌘/ctrl + enter to run'
+    : '✓ rendered in ' + status.ms + ' ms';
+
+  var gutter = [];
+  for (var i = 0; i < lines; i++) gutter.push(h('span', String(i + 1)));
+
+  return h(FRAG, null,
+    h('div.pg-tabs',
+      PRESETS.map(function (p, i) {
+        return h('button.pg-tab' + (i === presetIdx ? ' on' : ''), {
+          'aria-pressed': i === presetIdx ? 'true' : 'false',
+          onClick: function () {
+            if (i === presetIdx) { run(code); return; }
+            setPresetIdx(i); setCode(p.code); run(p.code);
+          }
+        }, p.name);
+      }),
+      h('span.pg-tagline', PRESETS[presetIdx].tag),
+      h('button.pg-run', {
+        onClick: function () { run(taRef.current ? taRef.current.value : code); }
+      }, h(Icon, { name: 'play', size: 12 }), ' run')),
+    h('div.pg-grid.reveal',
+      h('div.editor',
+        h('div.ed-scroll',
+          h('div.ed-gut', { ref: function (el) { gutRef.current = el; }, 'aria-hidden': 'true' }, gutter),
+          h('div.ed-stack',
+            h('pre.ed-hl', { ref: function (el) { ovRef.current = el; }, 'aria-hidden': 'true' },
+              h('code', { dangerouslySetInnerHTML: { __html: hi } })),
+            h('textarea.src', {
+              ref: function (el) { taRef.current = el; },
+              value: code,
+              wrap: 'off', spellcheck: false,
+              autocapitalize: 'off', autocomplete: 'off',
+              'aria-label': 'playground source editor',
+              onInput: onInput, onKeyDown: onKeyDown, onScroll: onScroll
+            }))),
+        h('div.ed-bar',
+          h('span', 'editor · tab = 2 spaces'),
+          h('span.ed-status' + (status && status.err ? ' bad' : ''), stTxt))),
+      h('div.stage',
+        h('div.stage-head', 'output · live'),
+        h('div.stage-view', { class: 'pg-root', ref: function (el) { viewRef.current = el; } }))),
+    h('p.pg-foot',
+      'presets are plain functions — no transpiler, no build step. the root of ',
+      h('code', 'render()'), ' should be a component. the sandbox tears down your timers and ',
+      'subscriptions between runs, so break things freely.'));
+}
+
+function PlaygroundSec() {
+  return h('section.sec', { id: 'playground' },
+    h('div.wrap',
+      h(SecHead, {
+        n: '02', k: 'the proof',
+        title: 'The proof is the page',
+        sub: 'This editor is wired to the same compact runtime that renders the page you are reading — components, hooks, effects, signals. Edit anything, press run, and it re-renders for real.'
+      }),
+      h(Playground)));
+}
+
+/* ---------- compare ---------- */
+function Compare() {
+  var points = [
+    ['01', 'A small foundation', 'Preact’s project goals put size and runtime efficiency at the center. The core is approximately 3.5 kB gzipped; final output depends on your app and build.'],
+    ['02', 'Fast where it counts', 'A compact, predictable virtual DOM keeps updates efficient, while server rendering and hydration help you choose how pages arrive.'],
+    ['03', 'A codebase you can know', 'Understandability is a goal, not a bonus. Explore a core designed to be approachable instead of hidden behind layers of machinery.']
+  ];
+  return h('div.cmp-cards.reveal', points.map(function (point) {
+    return h('article.cmp-card',
+      h('span.eco-idx', point[0]),
+      h('b', point[1]),
+      h('p', point[2]));
+  }));
+}
+
+function CompareSec() {
+  return h('section.sec', { id: 'compare' },
+    h('div.wrap',
+      h(SecHead, {
+        n: '03', k: 'the ledger',
+        title: 'A smaller core. More room to build.',
+        sub: 'Preact’s goals are unusually practical: keep the runtime light, make updates efficient, and leave the source understandable.'
+      }),
+      h(Compare)));
+}
+
+/* ---------- ecosystem: signals demo ---------- */
+var dN = signal(3);
+var dSq = computed(function () { return dN.value * dN.value; });
+var dDec = computed(function () { return Math.floor(dN.value / 10); });
+
+function Watch(props) {
+  var rs = useState(0), renders = rs[0], bump = rs[1];
+  var fs = useState(false), hot = fs[0], setHot = fs[1];
+  var timer = useRef(null);
+  useEffect(function () {
+    return effect(function () {
+      props.sig.value;
+      bump(function (x) { return x + 1; });
+      setHot(true);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(function () { setHot(false); }, 650);
+    });
+  }, []);
+  useEffect(function () {
+    return function () { clearTimeout(timer.current); };
+  }, []);
+  return h('div.sig-chip' + (hot ? ' hot' : ''),
+    h('b', props.label + ' = ' + props.sig.value),
+    h('span', renders + (renders === 1 ? ' render' : ' renders')));
+}
+
+function SignalsDemo() {
+  var ws = useState(0), writes = ws[0], setWrites = ws[1];
+  return h('div.sig',
+    h('div.sig-head',
+      h('span', 'live · signals, the idea'),
+      h('span', 'fine-grained')),
+    h('div.sig-ctl',
+      h('span.sig-lab', 'n'),
+      h('input.sig-input', {
+        type: 'range', min: 0, max: 20, value: dN.value,
+        onInput: function (e) { dN.value = +e.target.value; setWrites(function (x) { return x + 1; }); }
+      }),
+      h('span.sig-lab', String(dN.value))),
+    h('div.sig-row',
+      h(Watch, { label: 'n', sig: dN }),
+      h(Watch, { label: 'n²', sig: dSq }),
+      h(Watch, { label: '⌊n/10⌋', sig: dDec })),
+    h('div.sig-foot',
+      h('span', 'writes to n: ', h('b.sig-writes', String(writes))),
+      h('span', 'each chip is its own subscriber — move the slider slowly and watch ⌊n/10⌋ render only when its value actually changes.')));
+}
+
+/* ---------- ecosystem ---------- */
+function EcoRow(props) {
+  return h('div.eco-row.reveal' + (props.flip ? ' flip' : ''),
+    h('div.eco-txt',
+      h('span.eco-idx', props.idx),
+      h('h3.eco-name', props.name, h('span.eco-tag', props.tag)),
+      h('p.eco-p', props.p),
+      props.extra,
+      h('div.eco-links', props.links.map(function (l) {
+        return h('a.chip', { href: l[1], target: '_blank', rel: 'noreferrer' }, l[0], h(Icon, { name: 'ext', size: 11 }));
+      }))),
+    h('div.eco-art', props.art));
+}
+
+function Eco() {
+  return h('section.sec', { id: 'ecosystem' },
+    h('div.wrap',
+      h(SecHead, {
+        n: '04', k: 'the neighborhood',
+        title: 'Keep your ecosystem',
+        sub: 'Compat keeps the libraries, signals keep reactivity cheap, and the bench around the core respects the same budget as the core.'
+      }),
+      h('div.eco',
+        h(EcoRow, {
+          idx: 'compat', name: 'preact/compat', tag: 'two lines of alias',
+          p: 'Point your bundler at preact/compat and the libraries you already use — routers, charts, headless kits — keep working unmodified. Most migrations are a config edit, a test run, and a pleasantly small diff review.',
+          extra: h(Receipt),
+          links: [
+            ['switching guide', 'https://preactjs.com/guide/v11/getting-started#aliasing-react-to-preact'],
+            ['compat docs', 'https://preactjs.com/guide/v11/getting-started#aliasing-react-to-preact'],
+            ['github', 'https://github.com/preactjs/preact']
+          ],
+          art: h(CodeBlock, {
+            code: WHY[3].code, label: 'vite.config.js',
+            onCopy: function (c) { copyText(c, 'vite.config.js — copied'); }
+          })
+        }),
+        h(EcoRow, {
+          idx: 'signals', name: '@preact/signals', tag: 'state that skips the diff', flip: true,
+          p: 'Signals give you reactive state that updates exactly the cells that depend on it — no re-render cascade, no memoization folklore. The demo on the left is wired to a working implementation, and it counts its own renders so you can watch the granularity happen.',
+          extra: null,
+          links: [
+            ['signals repo', 'https://github.com/preactjs/signals'],
+            ['docs', 'https://preactjs.com/guide/v11/signals']
+          ],
+          art: h('div.eco-stack',
+            h(SignalsDemo),
+            h(CodeBlock, {
+              code: `const n  = signal(3);
+const sq = computed(() => n.value * n.value);
+
+effect(() => console.log(sq.value)); // 9
+n.value = 4;                         // logs 16 — once`,
+              label: 'signals, the shape of it',
+              onCopy: function (c) { copyText(c, 'snippet — copied'); }
+            }))
+        }),
+        h(EcoRow, {
+          idx: 'the bench', name: 'htm · devtools · cli', tag: 'the workshop around the core',
+          p: 'No build step? htm gives you templates in the browser. Debugging? The Devtools extension plugs into the panel you already know. Scaffolding? The CLI ships a tuned default. The tooling respects the same budget as the core.',
+          extra: null,
+          links: [
+            ['htm', 'https://github.com/developit/htm'],
+            ['devtools', 'https://github.com/preactjs/preact-devtools'],
+            ['preact-cli', 'https://github.com/preactjs/preact-cli'],
+            ['preset-vite', 'https://github.com/preactjs/preset-vite']
+          ],
+          art: h('div.eco-stack',
+            h(Terminal, {
+              cmd: 'npm install preact', out: '+ preact — one small package, focused core',
+              onCopy: function (c) { copyText(c, 'command — copied'); }
+            }),
+            h(Terminal, {
+              cmd: 'npm install @preact/signals', out: '+ reactivity, without the diff',
+              label: 'sh — while you are at it',
+              onCopy: function (c) { copyText(c, 'command — copied'); }
+            }))
+        }))));
+}
+
+/* ---------- ship ---------- */
+function Ship() {
+  return h('section.sec.sec-ship', { id: 'ship' },
+    h('div.wrap',
+      h('div.sec-head.reveal',
+        h('span.kicker', h('b.kn', '07'), h('span', ' · the ask'))),
+      h('div.ship-row',
+        h('div',
+          h('h2.ship-title.reveal', 'ship the ', h('em', 'small web'), '.'),
+          h('p.ship-sub.reveal',
+            'Every framework claims to be fast. Preact attached a number to the claim and has kept it for a decade — ',
+            'the new site should say so in the first five seconds and prove it on the first click. ',
+            'This page is my entry: one file, zero dependencies, the argument running live in your tab.'),
+          h('div.ship-btns.reveal',
+            h('a.btn.solid', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' },
+              'star preact on github ', h(Icon, { name: 'ext', size: 14 })),
+            h('button.btn', {
+              onClick: function () { copyText('npm install preact', 'npm install preact — copied'); }
+            }, h(Icon, { name: 'copy', size: 14 }), ' copy install command'))),
+        h('div.reveal',
+          h(Terminal, {
+            cmd: 'npm install preact',
+            out: '+ preact — one small package, same modern API',
+            onCopy: function (c) { copyText(c, 'command — copied'); }
+          }),
+          h('p.pg-foot',
+            'this entire proposal is one .html file — view source, save it, send it to a friend. it runs.')))));
+}
+
+/* ---------- footer ---------- */
+function Footer() {
+  return h('footer.foot',
+    h('div.wrap',
+      h('div.foot-grid',
+        h('p.foot-col',
+          h('b', 'Preact'), ' is a remarkably small alternative to React with the same modern API. ',
+          'This page is an unofficial design proposal for the preactjs.com redesign competition — ',
+          'not affiliated with the Preact team, just fond of the small web.'),
+        h('nav.foot-links',
+          h('a', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' }, 'github/preactjs'),
+          h('a', { href: 'https://npmjs.com/package/preact', target: '_blank', rel: 'noreferrer' }, 'npm/preact'),
+          h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'getting started'),
+          h('a', { href: 'https://github.com/preactjs/signals', target: '_blank', rel: 'noreferrer' }, 'signals'),
+          h('a', { href: 'https://github.com/preactjs/preact-devtools', target: '_blank', rel: 'noreferrer' }, 'devtools')),
+        h('div.foot-links',
+          h('span', 'one file'),
+          h('span', 'zero scripts fetched'),
+          h('span', 'no build step'))),
+      h('div.foot-last',
+        h('span', 'set in archivo & ibm plex mono · rendered by the component runtime embedded in this file · no external javascript'),
+        h('a', { href: 'https://preactjs.com/blog/website-redesign-competition/', target: '_blank', rel: 'noreferrer' }, 'the competition post ↗'))));
+}
+
+/* ---------- toast ---------- */
+function Toast() {
+  var fs = useState(0), force = fs[1];
+  useEffect(function () {
+    return effect(function () {
+      _toast.value;
+      force(function (x) { return x + 1; });
+    });
+  }, []);
+  var t = _toast.value;
+  useEffect(function () {
+    if (!t) return;
+    var id = setTimeout(function () { _toast.value = null; }, 2400);
+    return function () { clearTimeout(id); };
+  }, [t && t.id]);
+  if (!t) return null;
+  return h('div.toast', { role: 'status' }, h(Icon, { name: 'check', size: 14 }), h('span', t.msg));
+}
+
+/* ---------- app ---------- */
+function currentRoute() {
+  var hash = location.hash.slice(1);
+  if (hash === 'docs' || hash.indexOf('docs-') === 0) return 'guide';
+  if (hash === 'blog-islands' || hash === 'blog/islands' || hash === 'blog/simplifying-islands-arch') return 'islands';
+  return ['guide', 'tutorial', 'libraries', 'project', 'blog'].indexOf(hash) >= 0 ? hash : 'home';
+}
+
+function App() {
+  var initialRoute = currentRoute();
+  var rs = useState(initialRoute), route = rs[0], setRoute = rs[1];
+  var as = useState(initialRoute === 'islands' ? 'blog' : initialRoute), active = as[0], setActive = as[1];
+  useEffect(function () {
+    function onHashChange() {
+      var next = currentRoute();
+      setRoute(next);
+      var navRoute = next === 'islands' ? 'blog' : next;
+      if (['home', 'guide', 'tutorial', 'libraries', 'project', 'blog'].indexOf(navRoute) >= 0) setActive(navRoute);
+    }
+    window.addEventListener('hashchange', onHashChange);
+    return function () { window.removeEventListener('hashchange', onHashChange); };
+  }, []);
+  useEffect(function () {
+    var titles = {
+      home: 'Preact — build for the web, not the bundle',
+      guide: 'Getting started — Preact',
+      tutorial: 'Learn Preact — interactive tutorial',
+      libraries: 'Libraries and tools — Preact',
+      project: 'Project goals — Preact',
+      blog: 'Stories from the small web — Preact',
+      islands: 'Build your own Island Components — Preact'
+    };
+    document.title = titles[route] || titles.home;
+    requestAnimationFrame(function () {
+      revealInit();
+      if (location.hash) {
+        var target = document.getElementById(location.hash.slice(1));
+        if (target) target.scrollIntoView();
+      }
+    });
+    if (route !== 'home') return;
+    var secs = document.querySelectorAll('main#home section[id]');
+    if (!('IntersectionObserver' in window) || !secs.length) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) { if (en.isIntersecting) setActive('home'); });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    for (var i = 0; i < secs.length; i++) io.observe(secs[i]);
+    return function () { io.disconnect(); };
+  }, [route]);
+  return h(FRAG, null,
+    h(Header, { active: active }),
+    route === 'guide'
+      ? h('main', { id: 'guide' }, h(DocsPage))
+      : route === 'tutorial'
+        ? h('main', { id: 'tutorial' }, h(TutorialPage))
+        : route === 'libraries'
+          ? h('main', { id: 'libraries' }, h(LibrariesPage))
+          : route === 'project'
+            ? h('main', { id: 'project' }, h(ProjectPage))
+            : route === 'blog'
+              ? h('main', { id: 'blog' }, h(BlogPage))
+              : route === 'islands'
+                ? h('main', { id: 'blog-islands' }, h(IslandArticlePage))
+              : h('main', { id: 'home' },
+        h(Hero),
+        h(HomeExplore),
+        h(Why),
+        h(HomeUseCases),
+        h(PlaygroundSec),
+        h(CompareSec),
+        h(Eco),
+        h(HomeWorkflow),
+        h(HomeReading),
+        h(HomeFAQ),
+        h(Ship)),
+    h(Footer),
+    h(Toast));
+}
+
+/* ---------- reveal on scroll ---------- */
+function revealInit() {
+  var els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    for (var i = 0; i < els.length; i++) els[i].classList.add('in');
+    return;
+  }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (en) {
+      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, { threshold: .12, rootMargin: '0px 0px -8% 0px' });
+  for (var j = 0; j < els.length; j++) io.observe(els[j]);
+}
+
+/* ---------- boot ---------- */
+render(h(App, {}), document.getElementById('app'));
+
+})();
+</script>
+</body>
+</html>
