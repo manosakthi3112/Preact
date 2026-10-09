@@ -173,6 +173,14 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;padding:.08rem .3rem;fo
 .led-inner{overflow:hidden}
 .led-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(1.5rem,4vw,3rem);padding:.2rem .25rem 1.7rem 4.2rem}
 .led-p{margin:0;max-width:34rem;font-size:.97rem;line-height:1.68;color:var(--ink);opacity:.9}
+.led-row{position:relative;isolation:isolate;overflow:hidden;transition:background .35s var(--ease),border-color .35s var(--ease),box-shadow .35s var(--ease),transform .35s var(--ease)}
+.led-row::before{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;opacity:0;background:radial-gradient(280px circle at var(--wave-x,50%) var(--wave-y,50%),color-mix(in srgb,var(--accent) 12%,transparent),transparent 72%);transition:opacity .35s var(--ease)}
+.led-row:hover::before,.led-row:focus-within::before,.led-row.open::before{opacity:1}
+.led-row:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));transform:translateY(-2px)}
+.led-row.open{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:0 16px 44px rgba(39,25,65,.09)}
+.led-head{position:relative;z-index:1}
+.led-body{position:relative;z-index:1}
+.led-head:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
 /* codeblock */
 .codeblock{border:1px solid var(--line);background:var(--paper2);overflow:hidden}
 .cb-head{display:flex;justify-content:space-between;align-items:center;padding:.5rem .8rem;border-bottom:1px solid var(--line);font:400 10.5px var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--faint)}
@@ -292,7 +300,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;padding:.08rem .3rem;fo
 .sec-ship{padding-bottom:clamp(3rem,7vw,6rem)}
 /* ---------- footer ---------- */
 .foot{border-top:1px solid var(--ink);margin-top:clamp(4rem,8vw,7rem);padding:2.6rem 0 1.6rem}
-.foot-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,.7fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+.foot-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.25fr) minmax(0,.7fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 .foot-col{margin:0;font-size:.95rem;line-height:1.66;max-width:34rem}
 .foot-col b{font-weight:600}
 .foot-links{display:flex;flex-direction:column;gap:.6rem;font:400 12.5px var(--mono)}
@@ -675,14 +683,54 @@ html.js .reveal.in{opacity:1;transform:none}
   --line:rgba(236,224,255,.16);--accent:#ae80ff;--acc-soft:rgba(174,128,255,.12);
   --acc-on-ink:#e3d4ff;--str:#cfadff;--err:#ff9382
 }
-::view-transition-old(root){animation:none}
-::view-transition-new(root){animation:theme-wave 1.25s cubic-bezier(.22,.61,.36,1) both}
+::view-transition-old(root),::view-transition-new(root){mix-blend-mode:normal}
+::view-transition-old(root){animation:theme-wave-out 1.8s cubic-bezier(.22,.61,.36,1) both}
+::view-transition-new(root){animation:theme-wave-in 1.8s cubic-bezier(.22,.61,.36,1) both}
 @keyframes theme-wave{
-  from{clip-path:circle(0 at var(--theme-wave-x,50vw) var(--theme-wave-y,50vh))}
-  to{clip-path:circle(150vmax at var(--theme-wave-x,50vw) var(--theme-wave-y,50vh))}
+  from{clip-path:polygon(
+    var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),
+    var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),
+    var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),
+    var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),
+    var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),
+    var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y),var(--theme-wave-x) var(--theme-wave-y))}
+  to{clip-path:polygon(
+    calc(var(--theme-wave-x) + 160vmax) var(--theme-wave-y),
+    calc(var(--theme-wave-x) + 167vmax) calc(var(--theme-wave-y) + 45vmax),
+    calc(var(--theme-wave-x) + 154vmax) calc(var(--theme-wave-y) + 89vmax),
+    calc(var(--theme-wave-x) + 122vmax) calc(var(--theme-wave-y) + 122vmax),
+    calc(var(--theme-wave-x) + 80vmax) calc(var(--theme-wave-y) + 139vmax),
+    calc(var(--theme-wave-x) + 38vmax) calc(var(--theme-wave-y) + 141vmax),
+    var(--theme-wave-x) calc(var(--theme-wave-y) + 142vmax),
+    calc(var(--theme-wave-x) - 38vmax) calc(var(--theme-wave-y) + 141vmax),
+    calc(var(--theme-wave-x) - 80vmax) calc(var(--theme-wave-y) + 139vmax),
+    calc(var(--theme-wave-x) - 122vmax) calc(var(--theme-wave-y) + 122vmax),
+    calc(var(--theme-wave-x) - 154vmax) calc(var(--theme-wave-y) + 89vmax),
+    calc(var(--theme-wave-x) - 167vmax) calc(var(--theme-wave-y) + 45vmax),
+    calc(var(--theme-wave-x) - 160vmax) var(--theme-wave-y),
+    calc(var(--theme-wave-x) - 167vmax) calc(var(--theme-wave-y) - 45vmax),
+    calc(var(--theme-wave-x) - 154vmax) calc(var(--theme-wave-y) - 89vmax),
+    calc(var(--theme-wave-x) - 122vmax) calc(var(--theme-wave-y) - 122vmax),
+    calc(var(--theme-wave-x) - 80vmax) calc(var(--theme-wave-y) - 139vmax),
+    calc(var(--theme-wave-x) - 38vmax) calc(var(--theme-wave-y) - 141vmax),
+    var(--theme-wave-x) calc(var(--theme-wave-y) - 142vmax),
+    calc(var(--theme-wave-x) + 38vmax) calc(var(--theme-wave-y) - 141vmax),
+    calc(var(--theme-wave-x) + 80vmax) calc(var(--theme-wave-y) - 139vmax),
+    calc(var(--theme-wave-x) + 122vmax) calc(var(--theme-wave-y) - 122vmax),
+    calc(var(--theme-wave-x) + 154vmax) calc(var(--theme-wave-y) - 89vmax),
+    calc(var(--theme-wave-x) + 167vmax) calc(var(--theme-wave-y) - 45vmax))}
+}
+@keyframes theme-wave-out{
+  from{opacity:1}
+  to{opacity:.28}
+}
+@keyframes theme-wave-in{
+  from{clip-path:circle(0 at var(--theme-wave-x,50vw) var(--theme-wave-y,50vh));filter:brightness(1.08)}
+  72%{filter:brightness(1.02)}
+  to{clip-path:circle(180vmax at var(--theme-wave-x,50vw) var(--theme-wave-y,50vh));filter:brightness(1)}
 }
 @media(prefers-reduced-motion:reduce){
-  ::view-transition-new(root){animation:none}
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
 }
 [data-theme="dark"] ::selection{color:#171220}
 [data-theme="dark"] .btn.solid{color:#171220}
@@ -921,6 +969,7 @@ main[id]{scroll-margin-top:88px}
 @media(prefers-reduced-motion:reduce){
   .ticker-row{animation:none}
   .atomw svg{animation:none}
+  .led-row,.led-body,.led-row::before{transition:none}
   *{scroll-behavior:auto!important}
 }
 </style>
@@ -1020,12 +1069,50 @@ function _insert(parentDom, doms, refNode) {
   }
 }
 
+function internalHref(href) {
+  if (typeof href !== 'string' || !/^https?:\/\//i.test(href)) return href;
+  var url;
+  try { url = new URL(href); } catch (e) { return '#home'; }
+  var host = url.hostname.toLowerCase();
+  var path = url.pathname.replace(/\/+$/, '');
+  if (
+    (host === 'github.com' && path === '/preactjs/preact/releases/tag/11.0.1') ||
+    (host === 'x.com' && path === '/preactjs') ||
+    (host === 'bsky.app' && path === '/profile/preactjs.com') ||
+    (host === 'preact.slack.com' && path.indexOf('/join/shared_invite/') === 0)
+  ) return href;
+  if (host === 'preactjs.com' && path.indexOf('/blog/') === 0) {
+    var slug = path.slice('/blog/'.length);
+    if (slug === 'simplifying-islands-arch') return '#blog-islands';
+    if (slug === 'website-redesign-competition') return '#blog';
+    return '#article-' + slug;
+  }
+  if (host === 'preactjs.com' && path.indexOf('/guide/v11/') === 0) {
+    if (path === '/guide/v11/signals') return '#signals';
+    if (path === '/guide/v11/differences-to-react') return '#differences';
+    if (url.hash.indexOf('aliasing-react-to-preact') >= 0) return '#compat';
+    return '#guide';
+  }
+  if ((host === 'github.com' || host === 'www.github.com') && path === '/preactjs/preact') return '#project';
+  if ((host === 'github.com' || host === 'www.github.com') && path === '/preactjs/signals') return '#signals';
+  if ((host === 'github.com' || host === 'www.github.com') && path === '/preactjs/preact-devtools') return '#tool-devtools';
+  if ((host === 'github.com' || host === 'www.github.com') && path === '/preactjs/preact-cli') return '#tool-cli';
+  if ((host === 'github.com' || host === 'www.github.com') && path === '/preactjs/preset-vite') return '#tool-vite';
+  if ((host === 'github.com' || host === 'www.github.com') && path === '/developit/htm') return '#tool-htm';
+  if (host === 'npmjs.com' && path === '/package/preact') return '#guide';
+  return '#libraries';
+}
+
 function _props(rec, oldP, newP) {
   var dom = rec.dom, name, val;
   for (name in newP) {
     val = newP[name];
     if (name === 'children' || name === 'ref' || name === 'dangerouslySetInnerHTML' || name === 'key') continue;
     if (oldP && oldP[name] === val) continue;
+    if (name === 'target' && newP.href && internalHref(newP.href) !== newP.href) {
+      dom.removeAttribute('target');
+      continue;
+    }
     if (/^on[A-Z]/.test(name)) {
       var ev = name.slice(2).toLowerCase();
       if (rec.evts[ev]) dom.removeEventListener(ev, rec.evts[ev]);
@@ -1037,6 +1124,7 @@ function _props(rec, oldP, newP) {
     if (name === 'checked') { dom.checked = !!val; continue; }
     if (name === 'style' && typeof val === 'string') { dom.style.cssText = val; continue; }
     if (name === 'class' || name === 'className') { if (val) dom.setAttribute('class', val); else dom.removeAttribute('class'); continue; }
+    if (name === 'href') val = internalHref(val);
     if (val === false || val == null) dom.removeAttribute(name);
     else if (val === true) dom.setAttribute(name, '');
     else dom.setAttribute(name, val);
@@ -1344,7 +1432,7 @@ var ATOM_SVG = (function () {
 })();
 
 var MENU = [
-  ['home', '#home'], ['guide', '#guide'], ['signals', '#signals'], ['tutorial', '#tutorial'],
+  ['home', '#home'], ['guide', '#guide'], ['tutorial', '#tutorial'],
   ['libraries', '#libraries'], ['project', '#project'], ['blog', '#blog']
 ];
 
@@ -1684,9 +1772,9 @@ function Header(props) {
         }, m[0]);
       })),
       h('div.hd-actions',
-        h('a.gh-btn', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' },
+        h('a.gh-btn', { href: 'https://github.com/preactjs/preact/releases/tag/11.0.1', target: '_blank', rel: 'noreferrer' },
           h(Icon, { name: 'github', size: 14 }),
-          h('span.gh-stars', 'view source')),
+          h('span.gh-stars', '11.0.1 release')),
         h('button.icon-btn', { onClick: toggleTheme, 'aria-label': theme === 'dark' ? 'Use light theme' : 'Use dark theme', title: 'toggle theme' },
           h(Icon, { name: theme === 'dark' ? 'sun' : 'moon', size: 16 })),
         h('button.icon-btn.menu-btn', { ref: function (el) { menuBtnRef.current = el; }, onClick: function () { setOpen(true); }, 'aria-label': 'open menu', 'aria-expanded': open ? 'true' : 'false' },
@@ -1704,8 +1792,10 @@ function MobileMenu(props) {
       return h('a', { href: m[1], onClick: props.close }, m[0]);
     })),
     h('div.mmenu-foot',
-      h('a', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' }, 'github ↗'),
-      h('a', { href: 'https://preactjs.com/blog/website-redesign-competition/', target: '_blank', rel: 'noreferrer' }, 'the competition ↗')));
+      h('a', { href: 'https://github.com/preactjs/preact/releases/tag/11.0.1', target: '_blank', rel: 'noreferrer' }, 'Preact 11.0.1 release'),
+      h('a', { href: 'https://x.com/preactjs', target: '_blank', rel: 'noreferrer' }, 'X'),
+      h('a', { href: 'https://bsky.app/profile/preactjs.com', target: '_blank', rel: 'noreferrer' }, 'Bluesky'),
+      h('a', { href: 'https://preact.slack.com/join/shared_invite/zt-3jn7lkdar-0ZkZpo889rl6p2Oyrmoo1w#/shared-invite/email', target: '_blank', rel: 'noreferrer' }, 'Join Slack')));
 }
 
 /* ---------- headline: type that carries real weight ---------- */
@@ -1988,7 +2078,7 @@ function HomeReading() {
           h('span.resource-tag', post[0]),
           h('b', post[1]),
           h('p', post[2]),
-          h('em', internal ? 'Read our island architecture guide →' : 'Read article ↗'));
+          h('em', internal ? 'Read our island architecture guide →' : 'Read story here →'));
       })),
       h('p', { class: 'page-copy', style: 'margin-top:1rem' },
         h('a', { href: '#blog', style: 'color:var(--accent);text-underline-offset:3px' }, 'Browse the reading list →'))));
@@ -2068,7 +2158,7 @@ function Counter() {
               h('h3', 'Keep your pipeline'),
               h('p', 'Bring Preact into a project that already uses tools such as Vite, Webpack, Rollup, or Parcel.'))),
           h('div.docs-next',
-            h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'See official setup instructions ', h(Icon, { name: 'ext', size: 13 })))),
+            h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'Review setup instructions ', h(Icon, { name: 'ext', size: 13 })))),
         h('section.docs-section', { id: 'docs-component' },
           h('h2', '2. Write a component'),
           h('p', 'A Preact component is a JavaScript function that returns UI. Use JSX with your project’s usual build setup, or use ', h('code', 'h()'), ' directly when you want to keep the example build-free.'),
@@ -2116,7 +2206,7 @@ render(h(App), document.getElementById('app'));`,
           h('h2', 'Where to go next'),
           h('p', 'The best next step is to build a small feature and keep the official guide close. Preact’s source is compact, the API is familiar, and the ecosystem is there when your project needs it.'),
           h('div.docs-next',
-            h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'Read the official guide ', h(Icon, { name: 'ext', size: 13 })),
+            h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'Return to the guide ', h(Icon, { name: 'arrow', size: 13 })),
             h('a', { href: '#playground' }, 'Explore the live playground ', h(Icon, { name: 'arrow', size: 13 })),
             h('a', { href: '#signals' }, 'Discover Signals ', h(Icon, { name: 'arrow', size: 13 })))))));
 }
@@ -2260,7 +2350,7 @@ console.log(count.value); // 1`,
           h('p', 'Signals work alongside Preact’s components, hooks, props, and context. Start with local state where it is enough, then introduce signals where shared or derived reactive state makes the design clearer.'),
           h('div.docs-next',
             h('a', { href: '#guide' }, 'Back to getting started ', h(Icon, { name: 'arrow', size: 13 })),
-            h('a', { href: 'https://preactjs.com/guide/v11/signals/', target: '_blank', rel: 'noreferrer' }, 'Open the official Signals guide ', h(Icon, { name: 'ext', size: 13 })))),
+            h('a', { href: 'https://preactjs.com/guide/v11/signals/', target: '_blank', rel: 'noreferrer' }, 'Open the Signals guide ', h(Icon, { name: 'arrow', size: 13 })))),
         h('div.signals-end',
           h('span.signals-kicker', 'THE REACTIVE TOOLKIT'),
           h('h2', 'Keep the model simple. Let updates flow.'),
@@ -2350,7 +2440,7 @@ function LibrariesPage() {
             h('span.resource-tag', item[0]),
             h('b', item[1]),
             h('p', item[2]),
-            h('em', 'Explore resource ↗'));
+            h('em', 'Explore guide →'));
         }))),
       h('section.page-section',
         h('h2', 'Bring what you already know.'),
@@ -2408,7 +2498,7 @@ function BlogPage() {
     h('header.page-intro.blog-intro',
       h('p.eyebrow', 'NOTES FROM THE PROJECT'),
       h('h1', 'Stories from the small web.'),
-      h('p', 'A reading room for the ideas behind Preact: thoughtful releases, practical architecture, and the tools that make a small core useful. Follow a story to its full article on preactjs.com.')),
+      h('p', 'A reading room for the ideas behind Preact: thoughtful releases, practical architecture, and the tools that make a small core useful. Every story opens right here.')),
     h('div.page-content',
       h('a.blog-featured', { href: 'https://preactjs.com/blog/preact-11', target: '_blank', rel: 'noreferrer' },
         h('div.blog-feature-copy',
@@ -2440,7 +2530,7 @@ function BlogPage() {
             h('span.resource-tag', post[0]),
             h('b', post[1]),
             h('p', post[2]),
-            h('em', internal ? 'Read the illustrated guide →' : 'Read article ↗'));
+            h('em', internal ? 'Read the illustrated guide →' : 'Read full story →'));
         }))),
       h('aside.blog-outro',
         h('div',
@@ -2476,10 +2566,7 @@ return documentFor({ body, scriptTags });`;
   return h('div.article-wrap',
     h('div.article-topline',
       h('a.article-back', { href: '#blog' }, h(Icon, { name: 'arrow', size: 13 }), ' Journal'),
-      h('a.article-source', {
-        href: 'https://preactjs.com/blog/simplifying-islands-arch/',
-        target: '_blank', rel: 'noreferrer'
-      }, 'Read the original on preactjs.com ↗')),
+      h('a.article-source', { href: '#article-prerendering-preset-vite' }, 'Next: prerendering with Vite →')),
     h('header.article-hero',
       h('p.eyebrow', 'FIELD NOTES · ARCHITECTURE'),
       h('h1.article-title', 'Build your own Island Components'),
@@ -2552,7 +2639,7 @@ return documentFor({ body, scriptTags });`;
           h('p', 'That is the central trade-off: server rendering makes the initial document useful, while focused client code adds interaction where it matters. Keep the architecture as simple as your page allows.'),
           h('div.article-end',
             h('a.article-back', { href: '#blog' }, '← Back to all stories'),
-            h('a', { href: 'https://preactjs.com/blog/simplifying-islands-arch/', target: '_blank', rel: 'noreferrer' }, 'Read the full original article ↗'))))),
+            h('a', { href: '#blog' }, 'Browse all stories →'))))),
     h('section.article-related',
       h('div.article-related-head',
         h('div',
@@ -2564,12 +2651,12 @@ return documentFor({ body, scriptTags });`;
           h('span.resource-tag', 'TOOLING'),
           h('b', 'Prerendering with Preset Vite'),
           h('p', 'See how prerendering fits into the Preact and Vite ecosystem.'),
-          h('em', 'Read article ↗')),
+          h('em', 'Read full story →')),
         h('a.blog-card', { href: 'https://preactjs.com/blog/introducing-signals', target: '_blank', rel: 'noreferrer' },
           h('span.resource-tag', 'REACTIVITY'),
           h('b', 'Introducing Signals'),
           h('p', 'Explore reactive values for fine-grained updates.'),
-          h('em', 'Read article ↗')))));
+          h('em', 'Read full story →')))));
 }
 
 /* ---------- why: the ledger ---------- */
@@ -2588,7 +2675,13 @@ function Why() {
           return h('div.led-row' + (isOpen ? ' open' : ''),
             h('button.led-head', {
               onClick: function () { setOpen(isOpen ? -1 : i); },
-              'aria-expanded': isOpen ? 'true' : 'false',
+            onMouseMove: function (event) {
+              var row = event.currentTarget.parentElement;
+              var rect = row.getBoundingClientRect();
+              row.style.setProperty('--wave-x', (event.clientX - rect.left) + 'px');
+              row.style.setProperty('--wave-y', (event.clientY - rect.top) + 'px');
+            },
+            'aria-expanded': isOpen ? 'true' : 'false',
               'aria-controls': 'why-detail-' + i
             },
               h('span.led-idx', String(i + 1).padStart(2, '0')),
@@ -2874,8 +2967,8 @@ function Ship() {
             'the new site should say so in the first five seconds and prove it on the first click. ',
             'This page is my entry: one file, zero dependencies, the argument running live in your tab.'),
           h('div.ship-btns.reveal',
-            h('a.btn.solid', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' },
-              'star preact on github ', h(Icon, { name: 'ext', size: 14 })),
+            h('a.btn.solid', { href: 'https://github.com/preactjs/preact/releases/tag/11.0.1', target: '_blank', rel: 'noreferrer' },
+              'Explore Preact 11.0.1 ', h(Icon, { name: 'arrow', size: 14 })),
             h('button.btn', {
               onClick: function () { copyText('npm install preact', 'npm install preact — copied'); }
             }, h(Icon, { name: 'copy', size: 14 }), ' copy install command'))),
@@ -2899,18 +2992,22 @@ function Footer() {
           'This page is an unofficial design proposal for the preactjs.com redesign competition — ',
           'not affiliated with the Preact team, just fond of the small web.'),
         h('nav.foot-links',
-          h('a', { href: 'https://github.com/preactjs/preact', target: '_blank', rel: 'noreferrer' }, 'github/preactjs'),
+          h('a', { href: 'https://github.com/preactjs/preact/releases/tag/11.0.1', target: '_blank', rel: 'noreferrer' }, 'Preact 11.0.1 release'),
           h('a', { href: 'https://npmjs.com/package/preact', target: '_blank', rel: 'noreferrer' }, 'npm/preact'),
-          h('a', { href: 'https://preactjs.com/guide/v11/getting-started', target: '_blank', rel: 'noreferrer' }, 'getting started'),
-          h('a', { href: 'https://github.com/preactjs/signals', target: '_blank', rel: 'noreferrer' }, 'signals'),
-          h('a', { href: 'https://github.com/preactjs/preact-devtools', target: '_blank', rel: 'noreferrer' }, 'devtools')),
+          h('a', { href: '#guide' }, 'getting started'),
+          h('a', { href: '#signals' }, 'signals guide'),
+          h('a', { href: '#tool-devtools' }, 'devtools guide')),
+        h('nav.foot-links', { 'aria-label': 'Preact community' },
+          h('a', { href: 'https://x.com/preactjs', target: '_blank', rel: 'noreferrer' }, 'X · @preactjs'),
+          h('a', { href: 'https://bsky.app/profile/preactjs.com', target: '_blank', rel: 'noreferrer' }, 'Bluesky · @preactjs.com'),
+          h('a', { href: 'https://preact.slack.com/join/shared_invite/zt-3jn7lkdar-0ZkZpo889rl6p2Oyrmoo1w#/shared-invite/email', target: '_blank', rel: 'noreferrer' }, 'Join Preact on Slack')),
         h('div.foot-links',
           h('span', 'one file'),
           h('span', 'zero scripts fetched'),
           h('span', 'no build step'))),
       h('div.foot-last',
         h('span', 'set in archivo & ibm plex mono · rendered by the component runtime embedded in this file · no external javascript'),
-        h('a', { href: 'https://preactjs.com/blog/website-redesign-competition/', target: '_blank', rel: 'noreferrer' }, 'the competition post ↗'))));
+        h('a', { href: '#blog' }, 'Browse design stories →'))));
 }
 
 /* ---------- toast ---------- */
@@ -2932,24 +3029,207 @@ function Toast() {
   return h('div.toast', { role: 'status' }, h(Icon, { name: 'check', size: 14 }), h('span', t.msg));
 }
 
+var RESOURCE_PAGES = {
+  'article-preact-11': {
+    tag: 'RELEASE NOTES', title: 'Preact 11: an incremental step forward',
+    deck: 'A release shaped by careful refinements: better hydration behavior, more predictable refs, and hooks that respond to meaningful changes.',
+    sections: [
+      ['Improve hydration without changing your mental model', 'Hydration connects a server-rendered tree to the browser. Preact 11 focuses on making this process more reliable while preserving the familiar component workflow. Keep server and client output aligned, and let the runtime attach behavior to the HTML already on the page.'],
+      ['Make refs easier to reason about', 'Refs are a direct bridge from a component to a DOM node or an imperative value. Consistent ref behavior makes it easier to integrate browser APIs, focus controls, and third-party widgets without extra framework machinery.'],
+      ['Treat hook equality with care', 'Hook dependencies and state comparisons determine when work should run again. These refinements help avoid updates that do not change observable output while keeping dependency behavior explicit.'],
+      ['Take the upgrade one step at a time', 'Review the release notes for your exact migration path, run the existing test suite, and verify hydration and ref-heavy interactions in the browser before shipping.']
+    ]
+  },
+  'article-prerendering-preset-vite': {
+    tag: 'TOOLING', title: 'Prerendering with Preset Vite',
+    deck: 'Give routes useful HTML before client JavaScript arrives, then let Preact take over only where interaction is needed.',
+    sections: [
+      ['Why prerender?', 'Prerendering produces HTML during the build for routes whose content is known ahead of time. Visitors and crawlers can read meaningful content immediately, and the browser can progressively load the code that adds behavior.'],
+      ['Start with routes and data', 'Identify which pages can be generated at build time, make their data available to the rendering step, and keep route output deterministic. Dynamic pages can still use server rendering or client-side loading where appropriate.'],
+      ['Hydrate the same tree', 'The browser needs to render the same initial structure as the prerendered document. Avoid time-dependent markup and browser-only assumptions in the initial render; move those into effects or client-only boundaries.'],
+      ['Measure the whole experience', 'Prerendering is a delivery strategy, not a substitute for efficient assets. Check HTML size, JavaScript transfer, hydration work, and navigation behavior together.']
+    ]
+  },
+  'article-signal-boosting': {
+    tag: 'REACTIVITY', title: 'Signal Boosting',
+    deck: 'Signals connect values to the places that use them, making shared and derived state easier to follow.',
+    sections: [
+      ['State as a value with subscribers', 'A signal wraps a value in a stable reference. Consumers can observe the value without requiring every component above them to coordinate an update manually.'],
+      ['Follow dependencies, not guesses', 'Computed values track the signals they read. When an input changes, the derived result becomes fresh automatically, keeping repeated calculations and copied state out of sync less often.'],
+      ['Use fine-grained updates where they help', 'A counter in a dense interface, a value shared by distant components, or derived data used in several places can benefit from direct signal subscriptions. For isolated local state, hooks remain an excellent choice.'],
+      ['Keep the state graph legible', 'Name signals after the concepts they represent, derive values rather than duplicating them, and keep effects focused on synchronizing with external systems.']
+    ]
+  },
+  'article-introducing-signals': {
+    tag: 'REACTIVITY', title: 'Introducing Signals',
+    deck: 'A gentle introduction to reactive values that notify the UI when the values it uses change.',
+    sections: [
+      ['What a signal is', 'A signal has a .value property. The signal object remains stable while its value changes, so references can be passed through props and context without losing the ability to react.'],
+      ['Read and write the value', 'Read a signal with .value, and assign a new value when the state changes. In Preact, a component that reads the value during render becomes a subscriber and updates when that value changes.'],
+      ['Compose with computed values', 'Use computed(fn) to derive a read-only value from other signals. Dependencies are discovered as the function reads them, so the graph stays aligned with the data actually used.'],
+      ['Reach for the right tool', 'Signals are not a requirement for every component. Use them when direct subscriptions or shared reactive state improve clarity; otherwise keep state local and straightforward.']
+    ]
+  },
+  'article-preact-x': {
+    tag: 'PROJECT HISTORY', title: 'Preact X, a story of stability',
+    deck: 'A look back at the release that strengthened the foundations of a small library while keeping the familiar component model.',
+    sections: [
+      ['A focused release', 'Preact X brought a modernized foundation to the project while holding on to the small size and practical API that made Preact useful. The goal was not change for its own sake, but a better base for the ecosystem.'],
+      ['Compatibility as a bridge', 'The compat entry point helps many React libraries run with Preact. It offers a migration path without making every application pay the cost of a larger core.'],
+      ['A stable ecosystem takes collaboration', 'Frameworks, renderers, tooling, and community packages work together to make a compact library feel complete. Stability comes from clear APIs and testing those boundaries.'],
+      ['Keep the principle in view', 'A small runtime is not a feature checklist. It is a deliberate foundation that leaves room for applications to choose the capabilities they need.']
+    ]
+  },
+  compat: {
+    tag: 'GUIDE · MIGRATION', title: 'Bring a React project along',
+    deck: 'Preact’s compat layer helps many React APIs and libraries work in a smaller runtime. Make the switch deliberately and validate the integrations your app relies on.',
+    sections: [
+      ['What compat does', 'preact/compat provides a compatibility layer for many React APIs. It can make existing components and ecosystem packages usable with Preact while keeping Preact’s core entry point focused.'],
+      ['Configure aliases in your bundler', 'Point React imports at Preact’s compat entry points in your build configuration. Vite projects can use the Preact preset; other bundlers support aliases through their own resolve configuration.'],
+      ['Check library assumptions', 'Confirm peer dependencies, rendering behavior, and any APIs used by your dependencies. Compatibility is broad, not absolute; test the features your users actually use.'],
+      ['Migrate in small steps', 'Start with a representative route, run unit and integration tests, then compare production output and runtime behavior. Keep a rollback path until the critical flows pass.']
+    ],
+    code: `// Example bundler aliases
+{
+  resolve: {
+    alias: {
+      react: 'preact/compat',
+      'react-dom': 'preact/compat'
+    }
+  }
+}`
+  },
+  differences: {
+    tag: 'GUIDE · API CHOICES', title: 'Preact and React: the practical differences',
+    deck: 'Preact shares a familiar component model, but it is its own library. Know the boundaries so you can choose the right APIs and compatibility layer.',
+    sections: [
+      ['A smaller core with a familiar shape', 'Preact implements a focused component and rendering API. Many everyday patterns transfer directly, while less common or framework-specific APIs may require compat or a different approach.'],
+      ['Use compat when dependencies need it', 'If a library imports React-specific entry points, configure preact/compat aliases and verify that library’s behavior. Avoid adding compatibility code when the application does not need it.'],
+      ['Check edge cases before migration', 'Pay particular attention to server rendering, refs, synthetic event assumptions, portals, and libraries with strict peer dependencies. A passing build alone does not verify runtime behavior.'],
+      ['Let the platform do its part', 'Preact works with standard browser APIs and web components. Prefer native capabilities when they provide the behavior you need without another dependency.']
+    ]
+  },
+  'tool-vite': {
+    tag: 'ECOSYSTEM · BUILD TOOLING', title: 'Build a Preact app with Vite',
+    deck: 'A quick development server, optimized production build, and Preact-aware JSX setup in one familiar workflow.',
+    sections: [
+      ['A productive development loop', 'Vite serves source modules during development and refreshes the browser as you edit. The Preact preset connects the JSX transform and common Preact conventions.'],
+      ['Keep configuration focused', 'Begin with the preset defaults, then add aliases, plugins, or build settings when a concrete project requirement calls for them.'],
+      ['Build and preview production output', 'Run a production build and serve the generated files locally before deployment. Check asset paths, route fallback behavior, and console output in the production preview.'],
+      ['Choose the right starting point', 'For a new app, use a Preact template or the project’s current recommended Vite setup. For an existing app, add the preset deliberately and test its current plugin compatibility.']
+    ],
+    code: `npm create vite@latest my-preact-app
+cd my-preact-app
+npm install
+npm run dev`
+  },
+  'tool-htm': {
+    tag: 'ECOSYSTEM · TEMPLATES', title: 'Write Preact templates with HTM',
+    deck: 'HTM lets you write JSX-like templates with tagged template literals, including in environments where adding a JSX transform is not practical.',
+    sections: [
+      ['Templates without a transform', 'HTM uses JavaScript tagged template literals to describe element trees. It can be useful for small demos, browser modules, or build pipelines where JSX is not available.'],
+      ['Connect HTM to Preact', 'Bind the template tag to Preact’s h function, then use the resulting html helper to describe components and DOM nodes.'],
+      ['Keep component boundaries clear', 'Templates still compose into ordinary component trees. Use named components and pass values explicitly so the markup stays readable as the interface grows.'],
+      ['Choose JSX when it fits', 'HTM is an option, not a replacement requirement. If your project already has a JSX transform, use the syntax and tooling that keep the codebase easiest to maintain.']
+    ],
+    code: `import { h } from 'preact';
+import htm from 'htm';
+
+const html = htm.bind(h);
+const view = html\`<button>Small template</button>\`;`
+  },
+  'tool-devtools': {
+    tag: 'ECOSYSTEM · DEBUGGING', title: 'Inspect your app with Devtools',
+    deck: 'A component inspector helps you understand what Preact rendered and trace the structure of your interface during development.',
+    sections: [
+      ['See the component tree', 'Devtools presents a structured view of component relationships so you can inspect how a page is composed beyond the raw DOM.'],
+      ['Use inspection as a debugging aid', 'When a UI looks wrong, locate the relevant component, inspect its position in the tree, and compare the rendered result with the component’s expected responsibility.'],
+      ['Keep development tooling out of production', 'Use browser debugging extensions during development and verify that production builds contain only the runtime and tools your application needs.'],
+      ['Pair inspection with tests', 'Visual inspection helps explain behavior; automated tests preserve important interactions and regression cases as the application changes.']
+    ]
+  },
+  'tool-cli': {
+    tag: 'ECOSYSTEM · PROJECT SETUP', title: 'Scaffold a Preact project',
+    deck: 'Start from a working project structure, then keep or remove the pieces that fit your application.',
+    sections: [
+      ['Start with a useful baseline', 'A project scaffold can provide a working entry point, scripts, and a sensible build setup so you spend less time on wiring and more time on the interface.'],
+      ['Understand the generated files', 'Read the package scripts and configuration before changing them. Knowing what owns development, tests, and production builds makes the project easier to maintain.'],
+      ['Add only what the product needs', 'Templates are starting points. Remove unused examples, add dependencies intentionally, and keep the app’s structure aligned with its actual features.'],
+      ['Alternative: a Vite template', 'If you prefer a direct modern bundler workflow, the Vite setup page in this redesign outlines a compact starting path.']
+    ]
+  }
+};
+
 /* ---------- app ---------- */
 function currentRoute() {
   var hash = location.hash.slice(1);
   if (hash === 'docs' || hash.indexOf('docs-') === 0) return 'guide';
   if (hash === 'signals' || hash === 'guide/v11/signals') return 'signals';
   if (hash === 'blog-islands' || hash === 'blog/islands' || hash === 'blog/simplifying-islands-arch') return 'islands';
+  if (RESOURCE_PAGES[hash]) return hash;
   return ['guide', 'tutorial', 'libraries', 'project', 'blog'].indexOf(hash) >= 0 ? hash : 'home';
+}
+
+function ResourcePage(props) {
+  var page = RESOURCE_PAGES[props.route];
+  if (!page) return h('div.wrap', h('header.page-intro', h('h1', 'Page not found'), h('a.btn', { href: '#home' }, 'Back to home')));
+  return h('div.article-wrap.resource-page',
+    h('div.article-topline',
+      h('a.article-back', { href: page.tag.indexOf('RELEASE') >= 0 || page.tag.indexOf('REACTIVITY') >= 0 ? '#blog' : '#libraries' },
+        h(Icon, { name: 'arrow', size: 13 }), page.tag.indexOf('RELEASE') >= 0 || page.tag.indexOf('REACTIVITY') >= 0 ? ' Journal' : ' Explore')),
+    h('header.article-hero',
+      h('p.eyebrow', page.tag),
+      h('h1.article-title', page.title),
+      h('p.article-deck', page.deck),
+      h('div.article-meta',
+        h('span', 'Preact field guide'),
+        h('span', '4 sections'),
+        h('span', 'Read it here'))),
+    h('div.article-layout',
+      h('aside.article-toc',
+        h('b', 'On this page'),
+        h('nav', { 'aria-label': 'Page contents' },
+          page.sections.map(function (section, index) {
+            return h('a', { href: '#resource-' + props.route + '-' + index }, section[0]);
+          }))),
+      h('article.article-body',
+        page.sections.map(function (section, index) {
+          return h('section', { id: 'resource-' + props.route + '-' + index },
+            h('h2', section[0]),
+            h('p', section[1]),
+            section[2] ? h(CodeBlock, { code: section[2], label: page.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.js' }) : null);
+        }),
+        page.code ? h(CodeBlock, { code: page.code, label: 'configuration example' }) : null,
+        h('div.article-callout',
+          h('p', h('b', 'Keep exploring inside this guide. '),
+            'Continue with the getting-started guide, discover Signals, or browse the Preact journal without leaving this redesign.')),
+        h('div.article-end',
+          h('a.article-back', { href: '#guide' }, '← Getting started'),
+          h('a', { href: '#signals' }, 'Explore Signals →')))),
+    h('section.article-related',
+      h('div.article-related-head',
+        h('div', h('span.kicker', 'NEXT UP'), h('h2', 'Keep exploring Preact')),
+        h('a', { href: '#libraries' }, 'Browse the toolkit →')),
+      h('div.explore-grid',
+        h('a.explore-card', { href: '#guide' }, h('span', 'START HERE'), h('b', 'Getting started'), h('p', 'Set up a project and build your first component.'), h('em', 'Open guide →')),
+        h('a.explore-card', { href: '#signals' }, h('span', 'REACTIVITY'), h('b', 'Signals'), h('p', 'Explore reactive and derived application state.'), h('em', 'Open Signals →')),
+        h('a.explore-card', { href: '#blog' }, h('span', 'FIELD NOTES'), h('b', 'The journal'), h('p', 'Browse architecture, release, and tooling stories.'), h('em', 'Browse stories →')))));
 }
 
 function App() {
   var initialRoute = currentRoute();
   var rs = useState(initialRoute), route = rs[0], setRoute = rs[1];
-  var as = useState(initialRoute === 'islands' ? 'blog' : initialRoute), active = as[0], setActive = as[1];
+  var initialActive = initialRoute === 'islands' || initialRoute.indexOf('article-') === 0 ? 'blog'
+    : initialRoute === 'compat' || initialRoute === 'differences' ? 'guide'
+    : initialRoute.indexOf('tool-') === 0 ? 'libraries' : initialRoute;
+  var as = useState(initialActive), active = as[0], setActive = as[1];
   useEffect(function () {
     function onHashChange() {
       var next = currentRoute();
       setRoute(next);
-      var navRoute = next === 'islands' ? 'blog' : next;
+      var navRoute = next === 'islands' || next.indexOf('article-') === 0 ? 'blog'
+        : next === 'compat' || next === 'differences' ? 'guide'
+        : next.indexOf('tool-') === 0 ? 'libraries' : next;
       if (['home', 'guide', 'signals', 'tutorial', 'libraries', 'project', 'blog'].indexOf(navRoute) >= 0) setActive(navRoute);
     }
     window.addEventListener('hashchange', onHashChange);
@@ -2966,7 +3246,7 @@ function App() {
       blog: 'Stories from the small web — Preact',
       islands: 'Build your own Island Components — Preact'
     };
-    document.title = titles[route] || titles.home;
+    document.title = titles[route] || (RESOURCE_PAGES[route] ? RESOURCE_PAGES[route].title + ' — Preact' : titles.home);
     requestAnimationFrame(function () {
       revealInit();
       if (location.hash) {
@@ -2999,6 +3279,8 @@ function App() {
               ? h('main', { id: 'blog' }, h(BlogPage))
               : route === 'islands'
                 ? h('main', { id: 'blog-islands' }, h(IslandArticlePage))
+                : RESOURCE_PAGES[route]
+                  ? h('main', { id: route }, h(ResourcePage, { route: route }))
               : h('main', { id: 'home' },
         h(Hero),
         h(HomeExplore),
